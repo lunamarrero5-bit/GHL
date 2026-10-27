@@ -6,25 +6,32 @@
   <meta name="theme-color" content="#f8f7f3">
   <title>FitCheck — Your closet, reimagined</title>
   <link rel="stylesheet" href="style.css">
+  <script src="core.js" defer></script>
   <script src="script.js" defer></script>
+  <script src="experience.js" defer></script>
 </head>
 <body>
+  <noscript><p class="recovery-banner">FitCheck needs JavaScript to manage your closet. Please enable JavaScript and reload this page.</p></noscript>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="header">
     <a class="logo" href="index.html" aria-label="FitCheck home">fitcheck<span>✳</span></a>
     <nav aria-label="Main navigation">
+      <button class="nav-button" data-view="today" aria-pressed="false">Style me</button>
       <button class="nav-button active" data-view="closet" aria-pressed="true">My closet</button>
       <button class="nav-button" data-view="builder" aria-pressed="false">Outfit builder</button>
       <button class="nav-button" data-view="saved" aria-pressed="false">Saved outfits</button>
+      <button class="nav-button" data-view="planner" aria-pressed="false">Planner</button>
+      <button class="nav-button" data-view="insights" aria-pressed="false">Insights & backup</button>
     </nav>
     <span class="profile" aria-label="Khushi's closet">K</span>
   </header>
-  <main>
+  <main id="main">
     <section class="hero">
       <div>
-        <p class="eyebrow">LESS OVERTHINKING. MORE OUTFITS.</p>
-        <h1>A full closet.<br><em>A fresh perspective.</em></h1>
-        <p class="intro">Rediscover what you own. Find what goes together.<br>Make getting dressed the easy part of your day.</p>
-        <button class="button dark" id="start-outfit">Let's build an outfit <span aria-hidden="true">↗</span></button>
+        <p class="eyebrow">YOUR CLOSET. NEW POSSIBILITIES.</p>
+        <h1>More outfits.<br><em>Same closet.</em></h1>
+        <p class="intro">Rediscover what you own. Find what goes together.<br> Make getting dressed the easy part of your day.</p>
+        <button class="button dark" id="start-outfit">Find my next look <span aria-hidden="true">↗</span></button>
       </div>
       <div class="hero-art" aria-hidden="true">
         <span class="art-label">YOUR NEXT FAVORITE OUTFIT<br>IS ALREADY IN YOUR CLOSET.</span>
@@ -34,14 +41,34 @@
       </div>
     </section>
 
-    <section id="closet-view" class="view" aria-labelledby="closet-heading">
+    <section id="today-view" class="view" aria-labelledby="today-heading">
+      <div class="section-heading"><div><p class="eyebrow">A LITTLE INSPIRATION, ALREADY OWNED</p><h2 id="today-heading">What are you dressing for?</h2></div><span class="pill">✳ Closet-first styling</span></div>
+      <p class="section-intro">A few thoughtful combinations, with a reason for every piece. You make the final call.</p>
+      <p class="demo-note">New here? The starter closet contains sample clothes. Add your own pieces or edit the examples to match what you own.</p>
+      <div class="styling-layout">
+        <form id="style-form" class="context-panel">
+          <label for="style-occasion">01 / The occasion</label><select id="style-occasion"><option value="Casual">Everyday & weekend</option><option value="Work">Office & client meetings</option><option value="Going out">Dinner & going out</option><option value="Formal">Black tie & formal</option></select>
+          <label for="style-weather">02 / Conditions at your event</label><select id="style-weather"><option value="mild">Mild / indoors</option><option value="cold">Chilly / needs a layer</option><option value="hot">Hot / keep it light</option><option value="rain">Rain / check footwear</option></select>
+          <p class="field-hint">Set conditions yourself. This is not a live forecast.</p>
+          <div class="form-columns"><div><label for="style-temp">Temperature (optional)</label><input id="style-temp" type="number" min="-60" max="140" placeholder="e.g. 60"></div><div><label for="temp-unit">Unit</label><select id="temp-unit"><option value="F">°F</option><option value="C">°C</option></select></div></div>
+          <label class="check-label"><input type="checkbox" id="favor-unworn" checked> Bring underused pieces back into rotation</label>
+          <button class="button dark full" type="submit">Find outfit ideas ↗</button>
+          <p class="field-hint">Uses your catalog, occasion and wear history. Rule-based suggestions; no AI service or shopping.</p>
+        </form>
+        <div id="suggestions" class="suggestion-area" aria-live="polite"><div class="welcome-card"><span class="large-spark">✳</span><h3>A fresh look is closer than you think.</h3><p>Choose an occasion and we’ll look through your closet. Try dinner out for your next birthday invite.</p><div class="journey"><span>01 Choose the moment</span><span>02 Make it yours</span><span>03 Save, plan or wear</span></div></div></div>
+      </div>
+    </section>
+
+    <section id="closet-view" class="view" aria-labelledby="closet-heading" hidden>
       <div class="section-heading"><div><p class="eyebrow">YOUR PERSONAL COLLECTION</p><h2 id="closet-heading">My closet <span class="count" id="closet-count">0</span></h2></div><button class="button dark" id="add-item">+ Add a piece</button></div>
       <div class="toolbar">
+        <label class="search-label">Search your closet<input type="search" id="closet-search" placeholder="Name or color…" maxlength="80"></label>
         <div class="categories" role="group" aria-label="Filter by category">
           <button class="chip active" data-category="All" aria-pressed="true">All pieces</button><button class="chip" data-category="Tops" aria-pressed="false">Tops</button><button class="chip" data-category="Bottoms" aria-pressed="false">Bottoms</button><button class="chip" data-category="Layers" aria-pressed="false">Layers</button><button class="chip" data-category="Shoes" aria-pressed="false">Shoes</button><button class="chip" data-category="Dresses" aria-pressed="false">Dresses</button>
         </div>
         <label class="occasion-filter">Occasion <select id="occasion-filter"><option value="All">Any occasion</option><option>Casual</option><option>Work</option><option>Going out</option></select></label>
       </div>
+      <div class="closet-extras"><label class="check-label"><input type="checkbox" id="unworn-filter"> Not worn in 30 days</label><button class="text-button" id="reset-filters">Clear filters</button><span id="filter-summary" role="status"></span></div>
       <div id="closet-grid" class="closet-grid"></div>
       <p class="empty" id="closet-empty" hidden>No pieces here yet. Add a piece or try another filter.</p>
     </section>
@@ -59,7 +86,18 @@
       <div class="section-heading"><div><p class="eyebrow">GOOD LOOKS, ON REPEAT</p><h2 id="saved-heading">Saved outfits <span class="count" id="outfit-count">0</span></h2></div><button class="button dark" id="new-outfit">+ Create an outfit</button></div>
       <div id="saved-grid" class="saved-grid"></div><p class="empty" id="saved-empty">Your next favorite look starts here. Build an outfit and save it for later.</p>
     </section>
-    <p class="storage-note">Made for your real wardrobe. Saved on this browser, just for you.</p>
+    <section id="planner-view" class="view" aria-labelledby="planner-heading" hidden>
+      <div class="section-heading"><div><p class="eyebrow">A LITTLE LESS MORNING RUSH</p><h2 id="planner-heading">Your outfit agenda</h2></div></div>
+      <p class="section-intro">Plan a saved outfit for a date. Planning does not mark anything as worn.</p>
+      <form id="plan-form" class="plan-form"><div><label for="plan-outfit">Saved outfit</label><select id="plan-outfit" required></select></div><div><label for="plan-date">Date</label><input type="date" id="plan-date" required></div><button type="submit" class="button dark">Plan outfit ↗</button></form>
+      <div id="plans" class="agenda"></div>
+    </section>
+    <section id="insights-view" class="view" aria-labelledby="insights-heading" hidden>
+      <p class="eyebrow">MAKE MORE OF WHAT YOU OWN</p><h2 id="insights-heading">Your wardrobe, in perspective</h2>
+      <div id="wardrobe-stats" class="stats-grid"></div><div id="wear-history" class="history-panel"></div>
+      <div class="backup-panel"><h3>A little peace of mind</h3><p>Your closet and photos stay in this browser on this device. Download a backup to keep a copy or move to another browser.</p><div class="backup-actions"><button class="button dark" id="export-backup">Download backup ↓</button><label class="button secondary" for="import-backup">Restore a backup ↑</label><input id="import-backup" type="file" accept="application/json,.json" hidden></div><p class="field-hint">Restoring replaces this browser’s closet after confirmation. Invalid backups are rejected. Download your current backup first.</p><p id="backup-error" class="form-error" role="alert"></p></div>
+    </section>
+    <p class="storage-note">Made for your real wardrobe. Saved on this browser, just for you.<br><button id="undo-change" class="text-button" hidden>Undo last change</button></p>
   </main>
   <footer><a href="index.html" class="logo">fitcheck<span>✳</span></a><span>Wear what you have. Love what you wear.</span><span>A little less “nothing to wear.”</span></footer>
 
@@ -71,6 +109,7 @@
       <label for="item-name">Item name</label><input id="item-name" maxlength="60" placeholder="e.g. My favorite white tee" required>
       <div class="form-columns"><div><label for="item-category">Category</label><select id="item-category"><option>Tops</option><option>Bottoms</option><option>Layers</option><option>Shoes</option><option>Dresses</option></select></div><div><label for="item-color">Color</label><input id="item-color" maxlength="30" placeholder="e.g. Cream" required></div></div>
       <label for="item-occasion">Best for</label><select id="item-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select>
+      <label for="item-shade">Illustration color (if no photo)</label><input id="item-shade" type="color" value="#c94040">
       <p class="form-error" id="item-error" role="alert"></p><button class="button dark full" id="submit-item" type="submit">Add to my closet</button>
     </form>
   </dialog>

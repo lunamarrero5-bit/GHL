@@ -1,56 +1,39 @@
 # FitCheck
 
-FitCheck is designed for people who own plenty of clothes but repeatedly find themselves wearing the same few outfits. The project aims to help people make better use of their existing wardrobe and get dressed for different occasions with less time and effort.
+**More outfits. Same closet.** A working wardrobe website for occasion-based combinations from a personal clothing catalog.
 
-## The Problem
+## Run
 
-Having a full closet does not always make choosing an outfit easy. Remembering what you own, deciding what goes together, and finding something suitable for an occasion can make getting dressed feel overwhelming. As a result, people may return to familiar outfits while feeling like they have nothing to wear.
+Serve this folder with any static web server, for example `python -m http.server 8000 --bind 127.0.0.1`, then visit `http://127.0.0.1:8000`. No installation, account, API key, build step or external asset service is required. Keep using the same hostname and port: browser storage belongs to that address. File URLs have browser-specific storage behavior; a local server is recommended.
 
-## Our Primary User: Khushi
+## Features
 
-Khushi is a young working professional who wants to get dressed for different occasions without spending too much time:
+- **Style me:** up to three catalog-based ideas for an occasion, conditions and optional temperature in Fahrenheit/Celsius, with reasons, swaps and optional layers. Incomplete inventories and unsupported formal dress codes show a gap instead of invented attire.
+- **My closet:** add/edit clothes, upload and resize photos, choose illustration colors, search names/colors, filter by category/occasion/30-day recency, and track laundry availability. Starter clothes are examples; replace them with what you own.
+- **Outfit builder:** assemble, name and save any combination. Saved looks may be partial; automatic suggestions require a top and bottom (or dress) plus shoes.
+- **Saved outfits:** reuse looks, plan dates or log wear. Saving and planning never mark clothes worn.
+- **Planner:** assign saved outfits to dates in an agenda. Future plans cannot be logged as already worn.
+- **Insights & backup:** actual logged wear dates, usage statistics, JSON download/restore and wear-log corrections.
+- **Undo last change:** reverse the most recent successful mutation in the current page session. Click again to redo. Reloading clears undo; download backups before important edits.
 
-- Remembering which clothes she owns.
-- Deciding which pieces go together.
-- Searching for an outfit while feeling like she has nothing to wear.
+## Reliability and privacy
 
-She wants a simpler way to use her wardrobe and feel confident in her outfit choices.
+State is validated before saving/importing. Failed writes preserve the previous in-memory state. Invalid stored data enters recovery mode and is retained for download rather than silently replaced. Backups reject duplicate IDs, broken outfit/plan references, invalid dates and unsupported image URLs. Restore requires confirmation and a successful write before replacing the screen. Photos are limited to 15 MB / 50 megapixels and resized to 600 px. Broken images get an illustration fallback. Cross-tab changes refresh the current state.
 
-## Project Goals
+Clothes and photos stay in this browser's localStorage. Quotas, private browsing and clearing site data affect persistence. Backups contain wardrobe photos and data; keep them somewhere you control. There are no accounts, cloud sync, server backups, live weather, AI chat, automatic photo segmentation, purchase imports or shopping integrations. Suggestions use transparent rules. Check garment availability, fabric warmth, waterproofing and your venue's dress code yourself.
 
-- Help users keep track of the clothes they already own.
-- Make it easier to put together outfits for different occasions.
-- Reduce the time and effort spent deciding what to wear.
-- Encourage users to explore more combinations within their existing wardrobe.
+## Verification
 
-## Project Status
+Run `node --test tests/core.test.js tests/storage.test.js` with Node 18+. The 23 checks cover catalog ownership, completeness, recency, laundry, weather rules, formal gaps, backup integrity, migration, storage failure, recovery and undo.
 
-FitCheck is a working front-end coding class project built with HTML, CSS, and JavaScript.
+Browser walkthrough: generate a chilly dinner look, save it, reload, plan a date, verify no wear history appeared, and undo the plan. Also check formal gaps, search/filter controls and editing. See PROCESS.md for research-derived outcomes, rubrics and a pilot test plan.
 
-## Run the App
+## Source files
 
-Open `index.html` in a modern browser. No installation, build step, or account is required. An internet connection is only needed for the optional Google Fonts; the app uses fallback fonts offline.
+- index.html / style.css: forms, navigation and responsive design.
+- core.js: pure recommendation, validation, date and recency rules.
+- script.js: closet, photos, saved outfits, storage and builder.
+- experience.js: styling, swaps, wear history, plans, insights, backups and editing.
+- tests/: regression checks using Node's built-in runner.
 
-For a consistent local development address, use VS Code's Live Server extension or run `python3 -m http.server 8000` from the project folder and open `http://localhost:8000`.
-
-## Using FitCheck
-
-1. Explore the eight illustrated sample clothing items in **My closet**.
-2. Choose **Add a piece** to enter a name, category, color, and occasion. Optionally upload a JPG, PNG, or WebP photo (up to 15 MB); photos are resized before saving.
-3. Filter the closet by clothing category and occasion.
-4. Open **Outfit builder**, select pieces, enter an outfit name and occasion, and save.
-5. Open **Saved outfits** to see combinations, use one as the starting point for another outfit, or delete it.
-
-Removing a clothing item also removes it from saved outfits. An outfit with no remaining pieces is deleted. The app asks before removing clothes or outfits.
-
-## Files
-
-- `index.html`: page structure, forms, and navigation.
-- `style.css`: responsive layout, colors, and typography.
-- `script.js`: sample wardrobe, filters, photo resizing, outfit creation, and browser storage.
-
-## Storage and Limitations
-
-Clothes and outfits are saved in this browser's `localStorage`. They do not sync across devices or browsers. Clearing site data removes them. Private browsing, blocked storage, or exceeding the browser's storage limit can prevent saving; the app displays an error when saving fails. Direct file URLs may handle storage differently across browsers, so a local server is recommended for regular use.
-
-The sample wardrobe uses original SVG illustrations. Uploaded photos stay in the browser. The app currently supports adding and removing pieces; editing existing pieces and automatic outfit recommendations are possible future additions.
+This is a local-first class-project website ready for user testing. Public production use requires a separately designed backend, authentication, durable storage, monitoring and security/accessibility review. No software can be guaranteed bulletproof.

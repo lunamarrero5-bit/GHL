@@ -20,7 +20,7 @@ function illustration(category, color = '#d0c3b7') {
 
 function starterWardrobe() {
   return [
-    ['Everyday cotton tee', 'Tops', 'Cream', 'Casual', '#e4dfcf'],
+    ['Everyday cotton tee', 'Tops', 'Red', 'Casual', '#c94040'],
     ['Straight-leg denim', 'Bottoms', 'Blue', 'Casual', '#66809b'],
     ['The oversized blazer', 'Layers', 'Sand', 'Work', '#c4af94'],
     ['Weekend sneakers', 'Shoes', 'White', 'Casual', '#e6e2d6'],
@@ -39,6 +39,10 @@ function loadState() {
     const data = JSON.parse(raw);
     const validItem = (item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.color === 'string' && categories.includes(item.category) && occasions.includes(item.occasion) && typeof item.image === 'string' && /^data:image\/(svg\+xml|jpeg|png|webp)[;,]/.test(item.image);
     if (!data || !Array.isArray(data.items) || !data.items.every(validItem) || !Array.isArray(data.outfits) || !data.outfits.every((outfit) => outfit && typeof outfit.id === 'string' && typeof outfit.name === 'string' && occasions.includes(outfit.occasion) && Array.isArray(outfit.itemIds) && outfit.itemIds.every((id) => data.items.some((item) => item.id === id)))) throw new Error('Invalid saved data');
+    // Update the original sample tee in closets saved before its color changed.
+    data.items = data.items.map((item) => item.name === 'Everyday cotton tee' && item.category === 'Tops' && item.color === 'Cream' && item.image === illustration('Tops', '#e4dfcf')
+      ? { ...item, color: 'Red', image: illustration('Tops', '#c94040') }
+      : item);
     return data;
   } catch {
     storageWarning = 'Saved data could not be loaded. A sample closet is shown; changes may not persist.';

@@ -9,7 +9,7 @@ function editPiece(item) {
   $('#item-category').value=item.category; $('#item-occasion').value=item.occasion;
   photoData=item.image.startsWith('data:image/svg')?'':item.image;
   let match; try { match = decodeURIComponent(item.image).match(/<g fill="(#[\da-f]{6})"/i); } catch { match = null; }
-  $('#item-shade').value=match ? match[1] : '#c94040';
+  $('#item-shade').value=match ? match[1] : '#a8b4a0';
   $('#photo-preview').hidden=!photoData; if(photoData) $('#photo-preview').src=photoData;
   $('#submit-item').disabled=false; $('#submit-item').textContent='Save changes';
   $('#item-error').textContent=''; $('#dialog-title').textContent='Make it yours'; $('#item-dialog').showModal();

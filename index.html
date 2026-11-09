@@ -14,7 +14,7 @@
   <script src="demo.js" defer></script>
   <script src="core.js" defer></script>
   <script src="script.js" defer></script>
-  <script src="experience.js" defer></script>
+  <script src="experience.js?v=direct-save" defer></script>
   <script src="tryon.js" defer></script>
   <script src="atelier.js" defer></script>
 </head>
@@ -177,6 +177,16 @@
       </div>
     </div><aside><div id="garment-preview" class="garment-preview"></div><p class="field-hint">A photo-based styling preview. Scale and position are visual adjustments, not garment dimensions or fit predictions.</p></aside></div>
     <p id="garment-error" class="form-error" role="alert"></p><div class="setup-actions"><button type="button" class="text-button" id="reset-garment">Reset outline & position</button><button type="button" class="button dark" id="save-garment">Save garment placement ↗</button></div>
+  </dialog>
+
+  <dialog id="suggested-save-dialog" aria-labelledby="suggested-save-title" aria-describedby="suggested-save-description">
+    <div class="dialog-heading"><h2 id="suggested-save-title">Keep this look</h2><button type="button" id="close-suggested-save" class="icon-button" aria-label="Close save outfit">×</button></div>
+    <p id="suggested-save-description">Save these pieces for later. Saving does not record a wear.</p>
+    <form id="suggested-save-form" novalidate>
+      <label for="suggested-outfit-name">Look name</label><input id="suggested-outfit-name" maxlength="60" required aria-describedby="suggested-save-error" autocomplete="off">
+      <p id="suggested-save-error" class="form-error" role="alert"></p>
+      <div class="look-actions"><button type="submit" class="button dark">Save outfit</button><button type="button" id="cancel-suggested-save" class="button secondary">Cancel</button></div>
+    </form>
   </dialog>
 
   <dialog id="item-dialog" aria-labelledby="dialog-title">

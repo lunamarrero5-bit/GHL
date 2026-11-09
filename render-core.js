@@ -20,7 +20,7 @@
       const sorted = [...garments].sort((a,b)=>a.id.localeCompare(b.id));
       const key = cacheKey(modelId,sorted.map(g=>g.id));
       // IDs are the public cache key; invalidate if a photo changed under an existing ID.
-      const signature = JSON.stringify([modelImage,sorted.map(g=>[g.id,g.image])]);
+      const signature = JSON.stringify([modelImage,sorted.map(g=>[g.id,g.image,g.category])]);
       if (cache.get(key)?.signature === signature) return cache.get(key).imageUrl;
       const requestKey = JSON.stringify([key,signature]);
       if (pending.has(requestKey)) return pending.get(requestKey);
@@ -34,7 +34,7 @@
         let timer;
         try {
           const imageUrl = await Promise.race([
-            Promise.resolve().then(()=>provider.renderOutfit({modelImage,garments:sorted.map(g=>g.image)})),
+            Promise.resolve().then(()=>provider.renderOutfit({modelImage,garments:sorted.map(g=>g.image),garmentDetails:sorted.map(g=>({id:g.id,image:g.image,category:g.category}))})),
             new Promise((_,reject)=>{ timer=setTimeout(()=>reject(Error('Rendering timed out. Please retry.')),timeoutMs); })
           ]);
           if (typeof imageUrl !== 'string' || !/^(https:\/\/|data:image\/(png|jpeg|webp);base64,|blob:|assets\/studio\/photos\/(balanced|straight|curve)-(casual|casual-layer|dress|dress-layer)\.png$)/.test(imageUrl)) throw Error('The provider returned an unsupported image.');

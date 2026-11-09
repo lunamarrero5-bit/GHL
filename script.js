@@ -288,9 +288,11 @@ $('#item-photo').addEventListener('change', async (event) => {
     if (!img.width || !img.height || img.width * img.height > 50000000) throw Error('Unsupported image dimensions');
     const scale = Math.min(1, 600 / Math.max(img.width, img.height));
     const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(img.width * scale)); canvas.height = Math.max(1, Math.round(img.height * scale));
-    const context = canvas.getContext('2d'); context.fillStyle = '#f8f7f3'; context.fillRect(0, 0, canvas.width, canvas.height); context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const context = canvas.getContext('2d'); context.drawImage(img, 0, 0, canvas.width, canvas.height);
     if (version !== photoVersion) return;
-    photoData = canvas.toDataURL('image/jpeg', 0.75); $('#photo-preview').src = photoData; $('#photo-preview').hidden = false;
+    const encoded = file.type==='image/jpeg' ? canvas.toDataURL('image/jpeg', 0.85) : canvas.toDataURL('image/png');
+    if(encoded.length>=2000000)throw Error('This cutout is too large.');
+    photoData = encoded; $('#photo-preview').src = photoData; $('#photo-preview').hidden = false;
   } catch { if (version === photoVersion) { $('#item-error').textContent = 'This photo could not be read. Please choose another image.'; event.target.value = ''; } }
   finally { URL.revokeObjectURL(url); if (version === photoVersion) { photoBusy = false; $('#submit-item').disabled = false; } }
 });

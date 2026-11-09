@@ -7,21 +7,22 @@
   <meta name="description" content="Your wardrobe, made personal. Choose your FitCheck model, rediscover your clothes, and curate looks for every occasion.">
   <title>FITCHECK — The Personal Wardrobe Atelier</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="atelier.css?v=luna-model-library">
-  <script src="models.js?v=luna-model-library" defer></script>
-  <script src="model-core.js?v=luna-model-library" defer></script>
-  <script src="render-core.js?v=luna-model-library" defer></script>
-  <script src="tryon-provider.js?v=luna-model-library" defer></script>
+  <link rel="stylesheet" href="atelier.css?v=natural-proportions">
+  <script src="models.js?v=natural-proportions" defer></script>
+  <script src="model-core.js?v=natural-proportions" defer></script>
+  <script src="garment-fit.js?v=natural-proportions" defer></script>
+  <script src="render-core.js?v=natural-proportions" defer></script>
+  <script src="tryon-provider.js?v=natural-proportions" defer></script>
   <script src="tryon-core.js" defer></script>
   <script src="demo.js?v=luna-integration" defer></script>
   <script src="photo-studio.js" defer></script>
   <script src="legacy-demo.js" defer></script>
-  <script src="core.js?v=luna-model-library" defer></script>
-  <script src="script.js?v=luna-model-library" defer></script>
+  <script src="core.js?v=natural-proportions" defer></script>
+  <script src="script.js?v=natural-proportions" defer></script>
   <script src="temperature.js?v=temperature-precision" defer></script>
   <script src="experience.js?v=temperature-precision" defer></script>
-  <script src="tryon.js?v=luna-model-library" defer></script>
-  <script src="atelier.js?v=luna-model-library" defer></script>
+  <script src="tryon.js?v=natural-proportions" defer></script>
+  <script src="atelier.js?v=natural-proportions" defer></script>
 </head>
 <body>
   <noscript><p class="recovery-banner">FitCheck needs JavaScript to manage your closet. Please enable JavaScript and reload this page.</p></noscript>
@@ -110,7 +111,7 @@
           <h3>Instant outfit collage</h3><div id="outfit-collage" class="outfit-collage"></div><p id="collage-empty" class="field-hint">Select pieces to see your collage.</p>
           <button id="render-outfit" class="button dark full" type="button">See it on my model</button>
           <p id="tryon-status" class="field-hint" role="status" aria-live="polite"></p><button id="retry-render" class="button secondary" type="button" hidden>Retry render</button>
-          <p class="field-hint">Exact demo looks can use Luna’s prepared photographs. Other outfits use a mock with garments beside the model. No live try-on provider is connected; images stay in this browser.</p><p id="render-allowance" class="field-hint"></p>
+          <p class="field-hint">Exact demo looks can use Luna’s prepared photographs. Other outfits use a proportional on-model styling preview. Fabric fit is approximate. No live try-on provider is connected; images stay in this browser.</p><p id="render-allowance" class="field-hint"></p>
           <h3>Your outfit <span id="selection-count" class="count">0</span></h3><div id="selected-items"></div><form id="outfit-form"><label for="outfit-name">Outfit name</label><input id="outfit-name" name="name" maxlength="60" placeholder="e.g. Office Monday" required><label for="outfit-occasion">Occasion</label><select id="outfit-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select><button class="button dark full" type="submit">Save this outfit ♡</button><button class="text-button full" type="button" id="clear-selection">Clear selection</button></form>
         </aside>
       </div>

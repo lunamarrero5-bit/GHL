@@ -12,7 +12,7 @@ test('cache key is stable for garment order and cannot collide on delimiter-cont
 });
 test('cached, reordered and concurrent requests invoke the provider only once',async()=>{
   let calls=0;
-  const renderer=R.createRenderer({storage:memory(),provider:{async renderOutfit(input){calls++;assert.deepEqual(input,{modelImage:request.modelImage,garments:['a.png','b.png']});return output;}}});
+  const renderer=R.createRenderer({storage:memory(),provider:{async renderOutfit(input){calls++;assert.equal(input.modelImage,request.modelImage);assert.deepEqual(input.garments,['a.png','b.png']);assert.deepEqual(input.garmentDetails.map(g=>g.id),['a','b']);return output;}}});
   await Promise.all([renderer.render(request),renderer.render({...request,garments:[...request.garments].reverse()})]);
   assert.equal(await renderer.render(request),output);assert.equal(calls,1);assert.equal(renderer.remaining(),4);
 });

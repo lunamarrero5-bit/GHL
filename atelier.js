@@ -15,8 +15,8 @@ function mountModelImage() {
   const result=!dialogOpen && builderVisible && renderedOutfitImage;
   const src=result || model.image;
   if(singleModelImage.getAttribute('src')!==src) singleModelImage.src=src;
-  singleModelImage.alt=result?(renderedOutfitImage.startsWith('assets/studio/photos/')?'Prepared photographic demo outfit on your selected model':'Mock outfit preview: chosen garments beside your selected model'):`Full-body ${model.photoPreset?'photographic ':''}${model.build} model with ${model.skinTone.replaceAll('-',' ')} skin and ${model.hairStyle} hair, in a plain fitted base layer`;
-  const scale=result?1:ModelLibrary.scaleForHeight(selection?.preferences.heightCm || ModelLibrary.defaults.heightCm,model);
+  singleModelImage.alt=result?(renderedOutfitImage.startsWith('assets/studio/photos/')?'Prepared photographic demo outfit on your selected model':'On-model styling preview with selected clothing at category anchors'):`Full-body ${model.photoPreset?'photographic ':''}${model.build} model with ${model.skinTone.replaceAll('-',' ')} skin and ${model.hairStyle} hair, in a plain fitted base layer`;
+  const scale=ModelLibrary.scaleForHeight(selection?.preferences.heightCm || ModelLibrary.defaults.heightCm,model);
   singleModelImage.style.transform=`scale(${scale})`;
   target.append(singleModelImage);
   $('#model-match').textContent=`Closest library match: ${model.build}, ${model.heightCm} cm, ${model.skinTone.replaceAll('-',' ')} skin, ${model.hairStyle} ${model.hairColor} hair. ${model.photoPreset?'Photographic sample by Luna.':'Placeholder illustration.'}`;

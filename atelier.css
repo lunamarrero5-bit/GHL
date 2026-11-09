@@ -372,3 +372,6 @@ dialog::backdrop { background: #1c1712a6; backdrop-filter: blur(6px); }
 .studio-callouts p { margin:0; }
 
 @media(max-width:900px){.builder-layout{display:flex;flex-direction:column}.builder-layout>.outfit-panel{order:-1;width:100%;position:static}.builder-layout>div{width:100%}}
+
+/* Reserve headroom for the maximum uniform height adjustment. */
+.avatar-canvas, .builder-avatar { box-sizing:border-box; padding:20px 12px 10px; }

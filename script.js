@@ -5,6 +5,7 @@ try { isDemoMode=localStorage.getItem('fitcheck-mode')!=='own'; } catch { /* Dem
 let STORAGE_KEY=isDemoMode?DEMO_STORAGE_KEY:OWN_STORAGE_KEY;
 function canUseItem(item) { return FitCheck.isOwned(item) || (isDemoMode && item?.origin==='demo' && FitCheck.demoPhotoOK(item.image)); }
 const categories = ['Tops', 'Bottoms', 'Layers', 'Shoes', 'Dresses'];
+let builderCategory = 'All';
 const occasions = ['Casual', 'Work', 'Going out'];
 const $ = (selector) => document.querySelector(selector);
 const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -178,8 +179,10 @@ function renderBuilder() {
   const picked=[...selected].filter(id => available.some(item=>item.id===id));
   let compatible=[];for(const id of picked)compatible=FitCheckTryOn.choose(compatible,available.find(item=>item.id===id),available);
   selected = new Set(compatible);
-  $('#builder-grid').replaceChildren(...available.map((item) => itemCard(item, true)));
-  $('#builder-empty').hidden = available.length > 0;
+  const visible = available.filter(item => builderCategory === 'All' || item.category === builderCategory);
+  $('#builder-grid').replaceChildren(...visible.map((item) => itemCard(item, true)));
+  $('#builder-empty').hidden = visible.length > 0;
+  $('#builder-empty').textContent = available.length ? 'No pieces in this category. Choose another category.' : 'Your closet is empty. Add a piece in My closet to get started.';
   const items = state.items.filter((item) => selected.has(item.id));
   $('#selection-count').textContent = items.length;
   const rows = items.map((item) => {
@@ -288,3 +291,9 @@ $('#item-form').addEventListener('submit', (event) => {
 
 render();
 if (storageWarning) notify(storageWarning);
+
+document.querySelectorAll('[data-builder-category]').forEach(button => button.addEventListener('click', () => {
+  builderCategory = button.dataset.builderCategory;
+  document.querySelectorAll('[data-builder-category]').forEach(chip => { const active = chip === button; chip.classList.toggle('active', active); chip.setAttribute('aria-pressed', String(active)); });
+  renderBuilder();
+}));

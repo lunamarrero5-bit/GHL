@@ -1,6 +1,7 @@
 /* Local photo placement. This composites real garment photos; it does not simulate fabric. */
 (function(root) {
   'use strict';
+  const studio=root.FitCheckHuman || (typeof require==='function'?require('./human-model.js'):null);
   const categories=['Tops','Bottoms','Dresses','Layers','Shoes'];
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   function imageKey(image) { let hash=2166136261; for(let i=0;i<image.length;i++) hash=Math.imul(hash^image.charCodeAt(i),16777619); return (hash>>>0).toString(16); }
@@ -20,10 +21,8 @@
   }
   function placement(item,geometry,override) {
     const v=validate(override||item.fitting||defaults(item),item.image);
-    const {shoulder,hips}=geometry;
-    const boxes={Tops:[160-shoulder-14,121,(shoulder+14)*2,108],Bottoms:[160-hips-3,geometry.pantsTop||218,(hips+3)*2,479-(geometry.pantsTop||218)],Dresses:[160-Math.max(shoulder,hips)-12,120,(Math.max(shoulder,hips)+12)*2,290],Layers:[160-shoulder-18,119,(shoulder+18)*2,161],Shoes:[110,449,100,38]};
     if(!categories.includes(item.category)) throw Error('Unknown garment category.');
-    const [x,y,w,h]=boxes[item.category];
+    const [x,y,w,h]=studio.garmentBox(item.category,geometry.anchors || studio.presetFor({shape:geometry.presetId || 'balanced'}).anchors);
     const minX=Math.min(...v.points.map(p=>p[0])),minY=Math.min(...v.points.map(p=>p[1]));
     const spanX=Math.max(...v.points.map(p=>p[0]))-minX,spanY=Math.max(...v.points.map(p=>p[1]))-minY;
     return {left:x+v.x-w*(v.width-1)/2,top:y+v.y-h*(v.height-1)/2,width:w*v.width,height:h*v.height,rotation:v.rotation,

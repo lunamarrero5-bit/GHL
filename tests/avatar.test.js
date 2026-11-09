@@ -43,13 +43,14 @@ test('names never appear as markup in the avatar SVG', () => {
   assert.ok(!markup.includes('<img'));
   assert.ok(!markup.includes('onerror'));
 });
-test('changing body proportions changes the silhouette', () => {
-  assert.notEqual(Avatar.svg(input({ waist: 95, hips: 115 })), Avatar.svg(input()));
+test('measurements cannot stretch a fixed body preset', () => {
+  assert.equal(Avatar.svg(input({ waist: 95, hips: 115 })), Avatar.svg(input()));
+  assert.deepEqual(Avatar.geometry(input({waist:95,hips:115})),Avatar.geometry(input()));
 });
-test('measurement guides highlight the chosen measurement', () => {
-  assert.notEqual(Avatar.svg(input(), 'chest'), Avatar.svg(input()));
+test('a measurement field cannot draw lines across the body', () => {
+  assert.equal(Avatar.svg(input(), 'chest'), Avatar.svg(input()));
   assert.ok(!Avatar.svg(input()).includes('NaN'));
-  for (const hairstyle of Avatar.hairStyles) assert.ok(Avatar.svg(input({ hairstyle })).includes('<svg'));
+  assert.ok(!Avatar.svg(input()).includes('<path'));
 });
 test('profile saving validates before writing', () => {
   let writes = 0;
@@ -96,33 +97,39 @@ test('a feet-only height assumes zero additional inches', () => {
   const p=Avatar.fromUS({...input(),feet:6,inches:'',chest:36,waist:30,hips:38,inseam:'',shoulders:''});
   assert.equal(p.height,182.88);assert.equal(Avatar.heightLabel(p.height),'6 ft 0 in');
 });
-test('human model clip IDs are scoped so separate previews do not overwrite appearance', () => {
-  const home=Avatar.svg(input(),'','home');const setup=Avatar.svg(input({skin:Avatar.tones[5]}),'','setup');
-  assert.ok(home.includes('fc-home-body-0'));assert.ok(setup.includes('fc-setup-body-0'));
-  assert.ok(!home.includes('fc-setup-body-0'));
+test('each preview has exactly one intact base image and no hair or body strips',()=>{
+  const markup=Avatar.svg(input());
+  assert.equal((markup.match(/<image /g)||[]).length,1);
+  assert.ok(markup.includes('assets/studio/photos/base-balanced.png'));
+  assert.ok(!/clipPath|hair-|filter|preserveAspectRatio="none"/.test(markup));
 });
 
-test('visible model uses photographic facial and body assets',()=>{
-  const markup=Avatar.svg(input());assert.ok(markup.includes('assets/human/body-medium.png'));
-  assert.ok(markup.includes('Photographic human styling reference'));
-  assert.ok(!markup.includes('Personalized shaded body model'));
-});
-test('hair is a photographic layer that can render over clothes',()=>{
-  const hair=Avatar.hairSvg(input());assert.ok(hair.includes('assets/human/hair-long.png'));
-  const body=Avatar.svg(input(),'','body',{includeHair:false});assert.ok(!body.includes('hair-long.png'));
-  assert.ok(!Avatar.hairSvg(input({hairstyle:'none'})).includes('<image'));
-});
-test('photo appearance assets vary by selected skin tone and hairstyle',()=>{
+test('three body presets select separate assets and reject unknown IDs',()=>{
   const H=require('../human-model.js');
-  assert.equal(new Set(Avatar.tones.map(tone=>H.bodyFor(tone))).size,6);
-  for(const style of ['long','bob','short'])assert.ok(H.hairFor(style).file.endsWith('.png'));
-  assert.equal(H.hairFor('none'),null);
-  assert.throws(()=>H.bodyFor('unknown'));
+  assert.equal(Object.keys(H.shapes).length,3);
+  assert.equal(new Set(Object.keys(H.shapes).map(shape=>H.presetFor({shape}).image)).size,3);
+  assert.notEqual(Avatar.svg(input({shape:'curve'})),Avatar.svg(input({shape:'straight'})));
+  assert.throws(()=>Avatar.validate(input({shape:'unknown'})));
 });
-test('body shaping preserves the face while changing torso proportions',()=>{
-  const H=require('../human-model.js');const normal=H.strips(Avatar.geometry(input()));const changed=H.strips(Avatar.geometry(input({waist:95})));
-  assert.ok(normal.filter(row=>row.sourceTop<105).every(row=>row.scaleX===1));
-  assert.ok(changed.filter(row=>row.sourceTop<105).every(row=>row.scaleX===1));
-  assert.ok(normal.some((row,index)=>row.sourceTop>170&&row.sourceTop<260&&row.scaleX!==changed[index].scaleX));
-  assert.ok(changed.every(row=>row.height>0&&Number.isFinite(row.scaleX)&&row.scaleY>0));
+
+test('legacy profiles default to Balanced without deleting measurements',()=>{
+  const previous=input();delete previous.shape;delete previous.measurementsProvided;
+  const profile=Avatar.validate(previous);
+  assert.equal(profile.shape,'balanced');assert.equal(profile.measurementsProvided,true);
+  assert.equal(profile.height,previous.height);assert.equal(profile.waist,previous.waist);
+});
+
+test('all base PNGs share the same canvas and retain an alpha channel',()=>{
+  const fs=require('node:fs'),path=require('node:path'),H=require('../human-model.js');
+  for(const file of H.images){const data=fs.readFileSync(path.join(__dirname,'..',file));
+    assert.equal(data.readUInt32BE(16),H.canvas.rasterWidth);
+    assert.equal(data.readUInt32BE(20),H.canvas.rasterHeight);
+    assert.equal(data[25],6,'PNG must be RGBA');
+  }
+});
+
+test('fixed-pose anchor configuration cannot be mutated by a preview',()=>{
+  const H=require('../human-model.js');assert.ok(Object.isFrozen(H.shapes.curve.anchors.hips[0]));
+  for(const preset of Object.values(H.shapes))for(const points of Object.values(preset.anchors))
+    assert.ok(points.every(([x,y])=>x>=0&&x<=320&&y>=0&&y<=520));
 });

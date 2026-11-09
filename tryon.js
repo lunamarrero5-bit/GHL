@@ -2,26 +2,31 @@
 const Fitting=FitCheckTryOn;
 let fittingItemId=null, fittingDraft=null, selectedOutlinePoint=0, addingOutlinePoint=false, draggingOutlinePoint=null;
 
-function renderDressedAvatar(target,profile,ids,namespace,overrides={}) {
+function renderDressedAvatar(target,profile,ids,namespace,overrides={},useStyledPhoto=true) {
   const stage=element('div','model-canvas');
-  const body=element('div','model-body');body.innerHTML=FitCheckAvatar.svg(profile,'',namespace,{includeHair:false});
-  stage.append(body);
+  const preset=FitCheckHuman.presetFor(profile), geometry=FitCheckAvatar.geometry(profile);
   const pieces=Fitting.layers(ids.map(id=>state.items.find(item=>item.id===id)).filter(canUseItem));
-  for(const item of pieces) {
-    const position=Fitting.placement(item,FitCheckHuman.clothingGeometry(FitCheckAvatar.geometry(profile)),overrides[item.id]);
-    const layer=element('div','garment-overlay');layer.dataset.garmentId=item.id;
-    layer.style.left=position.left/320*100+'%';layer.style.top=position.top/520*100+'%';
-    layer.style.width=position.width/320*100+'%';layer.style.height=position.height/520*100+'%';
-    layer.style.clipPath=`polygon(${position.polygon})`;layer.style.transform=`rotate(${position.rotation}deg)`;
-    const image=element('img');image.alt=`Your model wearing ${item.name}`;
-    image.style.left=position.imageLeft+'%';image.style.top=position.imageTop+'%';
-    image.style.width=position.imageWidth+'%';image.style.height=position.imageHeight+'%';
-    image.addEventListener('error',()=>{layer.hidden=true;if(namespace==='builder')$('#tryon-status').textContent='A garment photo could not load. Replace that photo in My wardrobe.';});
-    image.src=item.image;layer.append(image);stage.append(layer);
+  const styled=useStyledPhoto?FitCheckPhotoStudio.lookup(profile,pieces,{allowDemo:isDemoMode,overrides}):null;
+  if(styled) {
+    stage.dataset.mode='styled-demo';
+    const photo=element('img','studio-base studio-styled-photo');photo.alt=`Generated styled demo photograph wearing ${pieces.map(item=>item.name).join(', ')}`;
+    photo.addEventListener('error',()=>{if(target.firstChild===stage)renderDressedAvatar(target,profile,ids,namespace,overrides,false);},{once:true});
+    photo.src=styled.src;stage.append(photo);target.replaceChildren(stage);
+    if(namespace==='builder')$('#tryon-status').textContent='Styled demo photograph · pre-rendered sample garments, not a fit prediction or a photo of you.';
+    return;
   }
-  const hair=element('div','model-hair');hair.innerHTML=FitCheckAvatar.hairSvg(profile,namespace+'-front');stage.append(hair);
+  stage.dataset.mode='placement';
+  const body=element('img','studio-base');body.src=preset.image;body.alt=`${preset.label} photographic sample model with integrated face and hair`;
+  stage.append(body);
+  for(const item of pieces) {
+    const image=element('img','studio-garment-layer');image.dataset.garmentId=item.id;image.alt=`Your model wearing ${item.name}`;image.hidden=true;
+    stage.append(image);
+    FitCheckStudioLayers.png(item,geometry,overrides[item.id]).then(url=>{image.src=url;image.hidden=false;}).catch(()=>{
+      const note=element('span','studio-load-error',`${item.name}: cutout unavailable. Replace its photo in My wardrobe.`);stage.append(note);
+    });
+  }
   target.replaceChildren(stage);
-  if(namespace==='builder')$('#tryon-status').textContent=pieces.length?`${pieces.length} of your pieces on your model. Adjust photo to refine the garment outline and placement.`:'Choose a piece from your own wardrobe to dress your model.';
+  if(namespace==='builder')$('#tryon-status').textContent=pieces.length?`2D placement preview · ${pieces.length} pieces. Adjust photo to refine alignment; fabric is not simulated.`:'Photographic sample model · choose pieces to build a look.';
 }
 
 function editorItem() { return state.items.find(item=>item.id===fittingItemId); }

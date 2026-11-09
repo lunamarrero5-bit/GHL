@@ -9,8 +9,6 @@ const measurementTips = {
   inseam: 'Measure along the inside of your leg from the crotch to the ankle. A helper can make this easier.',
   shoulders: 'Measure across your back, from the outer tip of one shoulder to the outer tip of the other. Ask someone to help.'
 };
-const skinNames = ['Light', 'Light medium', 'Medium', 'Medium deep', 'Deep', 'Rich deep'];
-const hairNames = ['Soft black', 'Chestnut', 'Golden blonde', 'Auburn', 'Silver'];
 let avatarProfile = null;
 let avatarRaw = null;
 let avatarReadError = '';
@@ -36,33 +34,29 @@ function renderAtelier() {
   const profile = avatarProfile || Avatar.example;
   renderDressedAvatar($('#home-avatar'), profile, [...selected], 'home');
   renderDressedAvatar($('#builder-avatar'), profile, [...selected], 'builder');
-  $('#avatar-status').textContent = avatarProfile ? 'YOUR PERSONAL MODEL' : 'GENERATED HUMAN REFERENCE';
+  $('#avatar-status').textContent = `${FitCheckHuman.presetFor(profile).label.toUpperCase()} / FIXED POSE`;
   $('#avatar-caption').textContent = avatarProfile ? `${profile.name || 'Your'}${profile.name ? '’s' : ''} personal silhouette.` : 'Make this silhouette yours.';
-  $('#avatar-height').textContent = avatarProfile ? `${Avatar.heightLabel(profile.height).toUpperCase()} / PERSONAL PROPORTIONS` : 'MADE TO YOUR MEASUREMENTS';
+  $('#avatar-height').textContent = 'PHOTOGRAPHIC SAMPLE MODEL';
   $('#create-avatar').textContent = avatarProfile ? 'EDIT MY MODEL ↗' : 'PERSONALIZE MY MODEL ↗';
   $('#profile-initial').textContent = avatarProfile?.name ? Array.from(avatarProfile.name)[0].toUpperCase() : '◇';
   $('#profile-button').setAttribute('aria-label', avatarProfile ? 'Edit your model and measurements' : 'Create your personal model');
-
+  renderMeasurementNotes();
 }
 
-
-function makeSwatches(target, group, values, names) {
-  const nodes = values.map((value, index) => {
-    const label = element('label', 'swatch');
-    const input = element('input'); input.type = 'radio'; input.name = group; input.value = value;
-    input.setAttribute('aria-label', names[index]);
-    const dot = element('span'); dot.style.backgroundColor = value; dot.title = names[index];
-    label.append(input, dot); return label;
-  });
-  $(target).append(...nodes);
+function renderMeasurementNotes() {
+  const panel=$('#home-measurement-notes');panel.hidden=!$('#show-measurement-notes').checked;
+  panel.replaceChildren();
+  if(!avatarProfile?.measurementsProvided) { panel.append(element('p','','No measurements saved. Add optional notes in Personalize.'));return; }
+  ['height','chest','waist','hips'].forEach(key=>panel.append(element('dt','',Avatar.labels[key]),element('dd','',key==='height'?Avatar.heightLabel(avatarProfile.height):`${Avatar.display(avatarProfile[key],'in')} in`)));
 }
+
 
 function buildMeasurementFields() {
   $('#measurement-fields').replaceChildren(...Object.keys(Avatar.ranges).filter(key => key !== 'height').map((key, index) => {
     const wrapper = element('div', 'measurement-field');
     const label = element('label', '', `${String(index + 2).padStart(2, '0')} / ${Avatar.labels[key]}`); label.htmlFor = `measure-${key}`;
     const box = element('div', 'measurement-input-wrap');
-    const input = element('input'); input.type = 'number'; input.id = `measure-${key}`; input.step = '0.1'; input.inputMode = 'decimal'; input.required = !['inseam','shoulders'].includes(key);
+    const input = element('input'); input.type = 'number'; input.id = `measure-${key}`; input.step = '0.1'; input.inputMode = 'decimal'; input.required = false;
     input.setAttribute('aria-describedby', 'measurement-help'); input.placeholder = '—';
     input.addEventListener('focus', () => { highlightedMeasurement = key; $('#measurement-help').textContent = measurementTips[key]; renderSetupPreview(); });
     input.addEventListener('input', () => { delete input.dataset.cm; input.removeAttribute('aria-invalid'); $('#avatar-error').textContent = ''; renderSetupPreview(); });
@@ -75,13 +69,16 @@ function buildMeasurementFields() {
 function currentAppearance() {
   return {
     name: $('#avatar-name').value.trim(), unit: draftUnit,
-    skin: document.querySelector('[name="avatar-skin"]:checked')?.value || Avatar.example.skin,
-    hair: document.querySelector('[name="avatar-hair"]:checked')?.value || Avatar.example.hair,
-    hairstyle: $('#avatar-hairstyle').value
+    shape: $('#avatar-shape').value,
+    skin: (avatarProfile || Avatar.example).skin,
+    hair: (avatarProfile || Avatar.example).hair,
+    hairstyle: 'none'
   };
 }
 
 function completeDraft() {
+  const fields=[$('#height-feet'),$('#height-inches'),...Object.keys(Avatar.ranges).filter(key=>key!=='height').map(key=>$(`#measure-${key}`))];
+  if(fields.every(field=>field.value==='')) return Avatar.validate({...Avatar.example,...currentAppearance(),measurementsProvided:false});
   const input = {...currentAppearance(), feet:$('#height-feet').value, inches:$('#height-inches').value};
   if ($('#height-feet').dataset.cm!==undefined) {
     const total=Number($('#height-feet').dataset.cm)/2.54;
@@ -91,7 +88,7 @@ function completeDraft() {
     const field=$(`#measure-${key}`);
     input[key]=field.value!==''&&field.dataset.cm!==undefined?Number(field.dataset.cm)/2.54:field.value;
   }
-  return Avatar.fromUS(input);
+  return Avatar.fromUS({...input,measurementsProvided:true});
 }
 
 function previewDraft() {
@@ -110,8 +107,8 @@ function renderSetupPreview() {
   $('#setup-avatar').innerHTML = Avatar.svg(previewDraft(), setupStep === 1 ? highlightedMeasurement : '', 'setup');
   let complete = false;
   try { completeDraft(); complete = true; } catch { /* Missing measurements still allow an appearance preview. */ }
-  $('#preview-status').textContent = complete ? 'YOUR PROPORTIONS' : 'APPEARANCE PREVIEW';
-  $('#preview-note').textContent = complete ? 'A stylized interpretation of your measurements.' : 'Enter height, chest, waist and hips. Extra measurements are optional.';
+  $('#preview-status').textContent = `${FitCheckHuman.presetFor(previewDraft()).label.toUpperCase()} / FIXED POSE`;
+  $('#preview-note').textContent = 'A separate photographic model for this shape. Measurements never stretch the figure.';
 }
 
 function setSetupStep(index) {
@@ -125,7 +122,7 @@ function setSetupStep(index) {
   $('#setup-next').textContent = index === 2 ? 'SAVE MY AVATAR ↗' : 'CONTINUE →';
   if (index === 2) {
     const profile = completeDraft();
-    $('#measurement-summary').replaceChildren(...Object.keys(Avatar.ranges).flatMap(key => [element('dt', '', Avatar.labels[key]), element('dd', '', key === 'height' ? Avatar.heightLabel(profile.height) : `${Avatar.display(profile[key], 'in')} in${profile.estimated?.includes(key) ? ' (estimated)' : ''}`)]));
+    $('#measurement-summary').replaceChildren(element('dt','','Body shape'),element('dd','',FitCheckHuman.presetFor(profile).label),...(profile.measurementsProvided?Object.keys(Avatar.ranges).flatMap(key => [element('dt', '', Avatar.labels[key]), element('dd', '', key === 'height' ? Avatar.heightLabel(profile.height) : `${Avatar.display(profile[key], 'in')} in${profile.estimated?.includes(key) ? ' (estimated)' : ''}`)]):[element('dt','','Measurements'),element('dd','','Not added (optional)')]));
   }
   renderSetupPreview();
   if ($('#avatar-dialog').open) {
@@ -146,16 +143,15 @@ function openAvatar() {
   readAvatar(); setupStorageSnapshot = avatarRaw;
   const profile = avatarProfile || Avatar.example;
   highlightedMeasurement = '';
-  $('#avatar-name').value = profile.name; $('#avatar-hairstyle').value = profile.hairstyle;
-  document.querySelectorAll('[name="avatar-skin"]').forEach(input => { input.checked = input.value === profile.skin; });
-  document.querySelectorAll('[name="avatar-hair"]').forEach(input => { input.checked = input.value === profile.hair; });
+  $('#avatar-name').value = profile.name; $('#avatar-shape').value=profile.shape;
+  const hasMeasurements=avatarProfile?.measurementsProvided;
   const height=Avatar.usHeight(profile.height);
-  $('#height-feet').value=avatarProfile?height.feet:'';$('#height-inches').value=avatarProfile?height.inches:'';
-  if (avatarProfile) $('#height-feet').dataset.cm=String(profile.height); else delete $('#height-feet').dataset.cm;
+  $('#height-feet').value=hasMeasurements?height.feet:'';$('#height-inches').value=hasMeasurements?height.inches:'';
+  if (hasMeasurements) $('#height-feet').dataset.cm=String(profile.height); else delete $('#height-feet').dataset.cm;
   for (const key of Object.keys(Avatar.ranges).filter(key=>key!=='height')) {
     const field = $(`#measure-${key}`);
-    field.value = avatarProfile && !profile.estimated?.includes(key) ? Avatar.display(profile[key], 'in') : '';
-    if (avatarProfile) field.dataset.cm = String(profile[key]); else delete field.dataset.cm;
+    field.value = hasMeasurements && !profile.estimated?.includes(key) ? Avatar.display(profile[key], 'in') : '';
+    if (hasMeasurements) field.dataset.cm = String(profile[key]); else delete field.dataset.cm;
     field.removeAttribute('aria-invalid');
   }
   $('#profile-manage').hidden = !avatarProfile && avatarRaw === null;
@@ -171,8 +167,7 @@ function stopVideo() {
   $('#load-video').hidden = false;
 }
 
-makeSwatches('#skin-swatches', 'avatar-skin', Avatar.tones, skinNames);
-makeSwatches('#hair-swatches', 'avatar-hair', Avatar.hairColors, hairNames);
+$('#show-measurement-notes').addEventListener('change',renderMeasurementNotes);
 buildMeasurementFields();
 readAvatar();
 renderAtelier();

@@ -1,6 +1,7 @@
 /* Pure wardrobe rules shared by the website and regression tests. */
 (function (root) {
   'use strict';
+  const modelRules=root.FitCheckModel || (typeof require==='function'?require('./model-core.js'):null);
   const fitting=root.FitCheckTryOn || (typeof require==='function'?require('./tryon-core.js'):null);
   const demo=root.FitCheckDemo || (typeof require==='function'?require('./demo.js'):{images:[]});
   const demoPhotoOK=image=>demo.images.includes(image);
@@ -25,7 +26,7 @@
     if (!unique(data.outfits.map(o => o.id))) throw Error('Duplicate outfit IDs in backup.');
     const outfitIds = new Set(data.outfits.map(o => o.id));
     if (data.plans !== undefined && (!Array.isArray(data.plans) || data.plans.length > 2000 || !data.plans.every(p => p && textOK(p.id,100) && outfitIds.has(p.outfitId) && dateOK(p.date)) || !unique(data.plans.map(p => p.id)))) throw Error('Calendar data is invalid.');
-    return { items: data.items.map(i => ({ id:i.id, name:i.name, category:i.category, color:i.color, occasion:i.occasion, image:i.image, origin:i.origin==='demo'&&demoPhotoOK(i.image)?'demo':isOwned(i)?'owned':'unconfirmed', availability:i.availability || 'unknown', wears:i.wears || [], ...(i.fitting!==undefined?{fitting:fitting.validate(i.fitting,i.image)}:{}) })), outfits: data.outfits.map(o => ({id:o.id,name:o.name,occasion:o.occasion,itemIds:[...o.itemIds]})), plans: (data.plans || []).map(p => ({id:p.id,outfitId:p.outfitId,date:p.date})) };
+    return { ...(data.modelPreference !== undefined ? {modelPreference:modelRules.validateSelection(data.modelPreference)} : {}), items: data.items.map(i => ({ id:i.id, name:i.name, category:i.category, color:i.color, occasion:i.occasion, image:i.image, origin:i.origin==='demo'&&demoPhotoOK(i.image)?'demo':isOwned(i)?'owned':'unconfirmed', availability:i.availability || 'unknown', wears:i.wears || [], ...(i.fitting!==undefined?{fitting:fitting.validate(i.fitting,i.image)}:{}) })), outfits: data.outfits.map(o => ({id:o.id,name:o.name,occasion:o.occasion,itemIds:[...o.itemIds]})), plans: (data.plans || []).map(p => ({id:p.id,outfitId:p.outfitId,date:p.date})) };
   }
   const lastWorn = i => (i.wears || []).slice().sort().at(-1) || '';
   const underused = (i, today = day()) => !lastWorn(i) || (Date.parse(`${today}T12:00:00Z`) - Date.parse(`${lastWorn(i)}T12:00:00Z`)) / 86400000 >= 30;

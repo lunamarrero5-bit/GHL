@@ -9,8 +9,9 @@ test('adding a second top replaces the first',()=>assert.deepEqual(T.choose(['to
 test('a dress replaces top and bottom but retains shoes and a layer',()=>assert.deepEqual(T.choose(['top','bottom','jacket','shoes'],pieces[3],pieces),['jacket','shoes','dress']));
 test('choosing separates replaces a dress',()=>assert.deepEqual(T.choose(['dress','shoes'],pieces[0],pieces),['shoes','top']));
 test('clicking a selected piece removes it',()=>assert.deepEqual(T.choose(['top','bottom'],pieces[0],pieces),['bottom']));
-test('garment placement changes with body dimensions',()=>{
-  const p=pieces[0];assert.notEqual(T.placement(p,A.geometry(A.example)).width,T.placement(p,A.geometry({...A.example,shoulders:48})).width);
+test('garment placement uses preset anchors instead of entered body dimensions',()=>{
+  const p=pieces[2];assert.equal(T.placement(p,A.geometry(A.example)).width,T.placement(p,A.geometry({...A.example,hips:115})).width);
+  assert.notEqual(T.placement(p,A.geometry(A.example)).width,T.placement(p,A.geometry({...A.example,shape:'curve'})).width);
 });
 test('outlines and positioning persist through a full wardrobe backup round trip',()=>{
   const fitted={...pieces[0],fitting:{...T.defaults(pieces[0]),x:12,rotation:8}};

@@ -1,3 +1,11 @@
+# Current model-library implementation
+
+The layered photographic avatar, body warping, separate hair and garment-overlay renderer have been removed. The current system uses one complete model image, dynamic library matching, a flat garment collage and an explicitly requested mock render. See README.md for the provider interface, storage schema and limits. Legacy outline data is validated and preserved without rendering it on a body.
+
+Current integration verification: 118 Node tests pass. Luna’s three photo presets, twelve prepared demo looks, welcome name, measurement notes, category filters, nine Revolve references and legacy sage migration are integrated. Browser checks confirmed immediate model matching, saved preferences after reload, a single mounted model image, the instant collage, mock rendering and cached repeat rendering with no extra attempt charged. Earlier implementation notes below are historical and describe the replaced system.
+
+---
+
 # FitCheck: implementation and evaluation
 
 FitCheck's main purpose is to style clothing a user already owns, on a model informed by their measurements and appearance. Shopping is outside this experience. The demo workspace exists only to make the class project immediately explorable before a user uploads clothes; it is labeled and isolated from personal data.

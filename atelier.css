@@ -24,7 +24,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .profile-label { font-size: 9px; letter-spacing: 1.2px; }
 main { max-width: 1440px; padding: 0 4.5%; }
 .hero { display: block; padding: 37px 0 0; }
-.hero-layout { display: grid; grid-template-columns: 1.03fr 1.15fr .72fr; gap: 28px; min-height: 514px; }
+.hero-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 48px; min-height: 514px; }
 .hero-copy { padding: 41px 0 16px; }
 .eyebrow { font-size: 9px; font-weight: 400; line-height: 1.6; letter-spacing: 2px; color: #696052; }
 h1 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(42px, 4.5vw, 65px); font-weight: 400; line-height: 1.07; letter-spacing: -2.6px; margin: 27px 0 22px; }
@@ -115,11 +115,11 @@ select, input { border-radius: 0; background: #faf9f6; border-color: #cfc8bc; fo
 .secondary { background: #e8e1d5; border-color: #cfc2ae; color: #54452f; }
 .secondary:hover { background: #dbd0be; }
 .empty { background: #ede8de; }
-.builder-layout { grid-template-columns: minmax(0,1fr) 310px; }
+.builder-layout { grid-template-columns: minmax(0,1fr) 390px; }
 .builder-avatar-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .builder-avatar-heading .eyebrow { font-size: 7px; letter-spacing: .8px; margin: 0; }
 .builder-avatar-heading button { font-size: 8px; }
-.builder-avatar { height: 220px; background: #e2dacd; margin: 12px 0; }
+.builder-avatar { height: 420px; background: #e2dacd; margin: 12px 0; display: flex; justify-content: center; overflow: hidden; }
 .builder-avatar svg { width: 100%; height: 100%; }
 .outfit-panel { max-height: calc(100vh - 40px); overflow-y: auto; }
 .outfit-panel .field-hint { font-size: 9px; }
@@ -206,10 +206,39 @@ dialog::backdrop { background: #1c1712a6; backdrop-filter: blur(6px); }
 .measurement-guide-card p { font-size: 10px; line-height: 1.8; color: #6d6253; }
 .guide-source { display: inline-block; font-size: 8px; letter-spacing: .5px; margin-top: 20px; }
 #toast { border-radius: 0; background: #29251f; }
+.us-measurement-note { font-size: 10px; line-height: 1.8; padding: 12px 0; border-bottom: 1px solid var(--line); color: #68563e; }
+.height-fieldset { border: 0; padding: 0; margin: 20px 0 0; }
+.height-fieldset legend { font-size: 10px; }
+.height-fieldset label { margin-top: 8px; }
+.model-canvas { height: 100%; aspect-ratio: 320 / 520; position: relative; flex-shrink: 0; }
+.model-body { position: absolute; inset: 0; }
+.model-body svg { display: block; width: 100%; height: 100%; }
+.garment-overlay { position: absolute; overflow: hidden; pointer-events: none; transform-origin: center; }
+.garment-overlay img { position: absolute; max-width: none; object-fit: fill; padding: 0; margin: 0; }
+.avatar-canvas { overflow: hidden; }
+.garment-dialog { width: min(1040px, calc(100% - 30px)); padding: 28px; }
+.garment-editor-layout { display: grid; grid-template-columns: 1.1fr .9fr; gap: 30px; align-items: start; }
+.garment-editor-layout > * { min-width: 0; }
+.garment-editor-layout aside { position: sticky; top: 20px; }
+.garment-preview { height: 480px; background: #e8e1d4; display: flex; justify-content: center; overflow: hidden; }
+.outline-stage { position: relative; width: 100%; aspect-ratio: 4 / 5; background: #e9e4d9; touch-action: none; }
+.outline-stage > img { width: 100%; height: 100%; object-fit: fill; display: block; }
+.outline-stage > svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.outline-handle { position: absolute; width: 24px; height: 24px; border: 1px solid #fff; border-radius: 50%; background: #6e5533; color: white; transform: translate(-50%, -50%); font-size: 9px; padding: 0; touch-action: none; z-index: 1; cursor: grab; }
+.outline-handle.selected { background: #191919; outline: 2px solid #b68b48; outline-offset: 2px; }
+.outline-actions { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 10px; }
+.outline-actions .text-button { font-size: 10px; }
+.outline-actions [aria-pressed=true] { color: #191919; text-decoration: underline; }
+.placement-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+.placement-sliders label { font-size: 11px; color: #655640; }
+.placement-sliders output { float: right; color: #82725d; }
+.placement-sliders input { display: block; width: 100%; margin-top: 10px; accent-color: #79603e; }
+.selected-row .text-button { font-size: 8px; }
+.selected-row > span:not(.garment-photo) { font-size: 11px; }
 .form-error { color: #963d29; }
 [aria-invalid=true] { border-color: #963d29; }
 @media (min-width: 1450px) {
-  .hero-layout { grid-template-columns: 1fr 1.05fr .75fr; gap: 40px; }
+  .hero-layout { grid-template-columns: 1fr 1.1fr; gap: 60px; }
   .hero-copy { padding-top: 52px; }
   .avatar-stage { min-height: 565px; }
   .avatar-stage .avatar-canvas { height: 475px; }
@@ -269,6 +298,10 @@ dialog::backdrop { background: #1c1712a6; backdrop-filter: blur(6px); }
   .styling-layout { grid-template-columns: 1fr; }
   .welcome-card { min-height: 330px; }
   .builder-layout { grid-template-columns: 1fr; }
+  .garment-editor-layout { grid-template-columns: 1fr; gap: 20px; }
+  .garment-editor-layout aside { position: static; }
+  .garment-preview { height: 360px; }
+  .garment-dialog { padding: 24px 20px; }
   .builder-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .outfit-panel { position: static; max-height: none; }
   footer { padding: 25px 20px; gap: 22px; }
@@ -307,3 +340,11 @@ dialog::backdrop { background: #1c1712a6; backdrop-filter: blur(6px); }
   .editorial-product-image { height: 190px; }
 }
 @media (prefers-reduced-motion: reduce) { .editorial-product-image img { transition: none; } }
+
+.demo-banner { padding: 14px 4.5%; border-bottom: 1px solid #d9c9ad; background: #eae0cf; display:flex; justify-content:space-between; align-items:center; gap:18px; }
+.demo-banner strong { display:block; font-size:8px; letter-spacing:1.4px; font-weight:500; margin-bottom:6px; }
+.demo-banner span { display:block; font-size:10px; line-height:1.6; color:#726047; }
+.demo-banner > div:last-child { display:flex; align-items:center; gap:20px; flex-shrink:0; }
+.demo-banner .button { min-height:35px; font-size:8px; padding:10px 14px; }
+.demo-banner .text-button { font-size:8px; }
+@media(max-width:650px){.demo-banner {padding:12px 20px;align-items:flex-start;flex-direction:column;gap:10px}.demo-banner > div:last-child{width:100%;justify-content:space-between}.demo-banner span{font-size:9px}}

@@ -1,10 +1,15 @@
 /* Pure wardrobe rules shared by the website and regression tests. */
 (function (root) {
   'use strict';
-  const catalog = root.FitCheckCatalog || (typeof require === 'function' ? require('./catalog.js') : { pieces: [], images: [] });
-  const photoOK = image => typeof image === 'string' && image.length < 2000000 && (/^data:image\/(?:jpeg|png|webp);base64,/.test(image) || catalog.images.includes(image));
+  const fitting=root.FitCheckTryOn || (typeof require==='function'?require('./tryon-core.js'):null);
+  const demo=root.FitCheckDemo || (typeof require==='function'?require('./demo.js'):{images:[]});
+  const demoPhotoOK=image=>demo.images.includes(image);
+  const photoOK = image => typeof image === 'string' && image.length < 2000000 && /^data:image\/(?:jpeg|png|webp);base64,/.test(image);
+  // Read old sample data for recovery only. These URLs are never requested or rendered.
+  const legacyRemoteOK=image=>typeof image==='string'&&(/^https:\/\/is[48]\.revolveassets\.com\/images\/p4\/n\/uv\/[A-Z0-9]+-[A-Z0-9]+_V[12]\.jpg$/.test(image)||/^https:\/\/cdn\.dummyjson\.com\/product-images\/(womens-dresses|womens-shoes)\/[a-z'&-]+\/(1|thumbnail)\.webp$/.test(image)||/^https:\/\/fakestoreapi\.com\/img\/(71z3kpMAYsL\._AC_UY879_|51Y5NI-I5jL\._AC_UX679_|51eg55uWmdL\._AC_UX679_)\.jpg$/.test(image));
   // Accept old SVG data only for backward-compatible restore; it is never rendered as clothing.
-  const imageOK = image => photoOK(image) || (typeof image === 'string' && image.length < 2000000 && image.startsWith('data:image/svg+xml;charset=utf-8,'));
+  const imageOK = image => photoOK(image) || demoPhotoOK(image) || legacyRemoteOK(image) || (typeof image === 'string' && image.length < 2000000 && image.startsWith('data:image/svg+xml;charset=utf-8,'));
+  const isOwned = item=>!!item&&photoOK(item.image)&&!['unconfirmed','demo'].includes(item.origin);
   const categories = ['Tops', 'Bottoms', 'Layers', 'Shoes', 'Dresses'];
   const occasions = ['Casual', 'Work', 'Going out'];
   const day = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -13,20 +18,20 @@
   const unique = (xs) => new Set(xs).size === xs.length;
   function validate(data) {
     if (!data || !Array.isArray(data.items) || !Array.isArray(data.outfits) || data.items.length > 1000 || data.outfits.length > 1000) throw Error('This is not a supported FitCheck backup.');
-    if (!data.items.every(i => i && textOK(i.id, 100) && textOK(i.name, 60) && textOK(i.color, 30) && categories.includes(i.category) && occasions.includes(i.occasion) && imageOK(i.image) && (i.availability === undefined || ['unknown','ready','laundry'].includes(i.availability)) && (i.wears === undefined || (Array.isArray(i.wears) && i.wears.length <= 10000 && i.wears.every(d => dateOK(d) && d <= day()) && unique(i.wears))))) throw Error('A clothing item has invalid data.');
+    if (!data.items.every(i => i && textOK(i.id, 100) && textOK(i.name, 60) && textOK(i.color, 30) && categories.includes(i.category) && occasions.includes(i.occasion) && imageOK(i.image) && (i.origin === undefined || ['owned','unconfirmed','demo'].includes(i.origin)) && (i.availability === undefined || ['unknown','ready','laundry'].includes(i.availability)) && (i.wears === undefined || (Array.isArray(i.wears) && i.wears.length <= 10000 && i.wears.every(d => dateOK(d) && d <= day()) && unique(i.wears))))) throw Error('A clothing item has invalid data.');
     if (!unique(data.items.map(i => i.id))) throw Error('Duplicate clothing IDs in backup.');
     const ids = new Set(data.items.map(i => i.id));
     if (!data.outfits.every(o => o && textOK(o.id,100) && textOK(o.name,60) && occasions.includes(o.occasion) && Array.isArray(o.itemIds) && o.itemIds.length > 0 && unique(o.itemIds) && o.itemIds.every(id => ids.has(id)))) throw Error('An outfit contains invalid or missing pieces.');
     if (!unique(data.outfits.map(o => o.id))) throw Error('Duplicate outfit IDs in backup.');
     const outfitIds = new Set(data.outfits.map(o => o.id));
     if (data.plans !== undefined && (!Array.isArray(data.plans) || data.plans.length > 2000 || !data.plans.every(p => p && textOK(p.id,100) && outfitIds.has(p.outfitId) && dateOK(p.date)) || !unique(data.plans.map(p => p.id)))) throw Error('Calendar data is invalid.');
-    return { items: data.items.map(i => ({ id:i.id, name:i.name, category:i.category, color:i.color, occasion:i.occasion, image:i.image, availability:i.availability || 'unknown', wears:i.wears || [] })), outfits: data.outfits.map(o => ({id:o.id,name:o.name,occasion:o.occasion,itemIds:[...o.itemIds]})), plans: (data.plans || []).map(p => ({id:p.id,outfitId:p.outfitId,date:p.date})) };
+    return { items: data.items.map(i => ({ id:i.id, name:i.name, category:i.category, color:i.color, occasion:i.occasion, image:i.image, origin:i.origin==='demo'&&demoPhotoOK(i.image)?'demo':isOwned(i)?'owned':'unconfirmed', availability:i.availability || 'unknown', wears:i.wears || [], ...(i.fitting!==undefined?{fitting:fitting.validate(i.fitting,i.image)}:{}) })), outfits: data.outfits.map(o => ({id:o.id,name:o.name,occasion:o.occasion,itemIds:[...o.itemIds]})), plans: (data.plans || []).map(p => ({id:p.id,outfitId:p.outfitId,date:p.date})) };
   }
   const lastWorn = i => (i.wears || []).slice().sort().at(-1) || '';
   const underused = (i, today = day()) => !lastWorn(i) || (Date.parse(`${today}T12:00:00Z`) - Date.parse(`${lastWorn(i)}T12:00:00Z`)) / 86400000 >= 30;
-  function suggest(items, { occasion = 'Casual', weather = 'mild', rediscover = true } = {}) {
+  function suggest(items, { occasion = 'Casual', weather = 'mild', rediscover = true, allowDemo = false } = {}) {
     if (!occasions.includes(occasion)) return { looks: [], message: 'Your catalog does not confirm any formal or black-tie attire. Add suitable pieces before planning this dress code; a work look is not a substitute.' };
-    const pool = items.filter(i => i.availability !== 'laundry');
+    const pool = items.filter(i => (isOwned(i) || (allowDemo && i.origin==='demo' && demoPhotoOK(i.image))) && i.availability !== 'laundry');
     const score = i => (i.occasion === occasion ? 10 : 0) + (rediscover && underused(i) ? 5 : 0) - (i.wears || []).length * 0.1;
     const by = category => pool.filter(i => i.category === category && (i.occasion === occasion || category === 'Shoes' || category === 'Layers')).sort((a,b) => score(b)-score(a)).slice(0,30);
     const tops=by('Tops'), bottoms=by('Bottoms'), dresses=by('Dresses'), shoes=by('Shoes'), layers=by('Layers');
@@ -41,7 +46,7 @@
     }).sort((a,b)=>b.score-a.score).slice(0,3);
     return { looks:result, message: result.length === 1 ? 'One complete combination found. Add more pieces to unlock alternatives.' : `${result.length} combinations from your closet. Swap pieces to make them yours.` };
   }
-  const api = { validate, suggest, underused, lastWorn, day, dateOK, imageOK, photoOK, catalog };
+  const api = { validate, suggest, underused, lastWorn, day, dateOK, imageOK, photoOK, isOwned, demoPhotoOK };
   if (typeof module !== 'undefined') module.exports = api;
   root.FitCheck = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

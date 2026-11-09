@@ -1,65 +1,39 @@
-# FitCheck: evidence and evaluation
+# FitCheck: implementation and evaluation
 
-The supplied project brief prioritizes occasion-based outfit suggestions. Wardrobe capture supports that goal, while weather and recency are decision inputs. This website combines a finite suggestion flow with a searchable closet and manual builder. Separate Save, Wear today and Plan actions address the ambiguous keep/save labels in the testing feedback. Swaps, layers, temperature units and exact wear dates address additional feedback.
+FitCheck's main purpose is to style clothing a user already owns, on a model informed by their measurements and appearance. Shopping is outside this experience. The demo workspace exists only to make the class project immediately explorable before a user uploads clothes; it is labeled and isolated from personal data.
 
-The red tee change is preserved. Existing IDs and saved outfit references survive the upgrade. Wear histories start empty instead of being invented. Starter clothes are explicitly labeled as examples.
+## Current user flow
 
-## Observable outcomes for a pilot
+1. Open the demo and see a model dressed in a tee, trousers and sneakers.
+2. Set up skin tone, hair and US measurements: height in feet/inches; chest, waist and hips in inches. Optional inseam/shoulder values can be estimated, with that status visible.
+3. Build a Look by selecting or swapping photo garments. Dresses replace separates; layers and shoes render last.
+4. Use Adjust photo to outline a garment and position/scale/rotate its photographic layer. Save the placement and look.
+5. Switch to the personal wardrobe and upload actual owned clothing. The demo data and personal data never share a storage key.
+6. Reuse saved looks, plan a date, log actual wear and back up the active wardrobe.
 
-Recruit working professionals who dress for office and social occasions. Obtain consent before recording. Read the birthday-dinner scenario without pointing to controls, then observe these outcomes:
+## Scope and limitations
 
-| Story | Observable evidence |
-|---|---|
-| Add clothes | Adds a real item and finds it in the closet without help. |
-| Dress for an occasion | Reaches a full combination and names one they would wear. |
-| Rediscover | Finds an item not worn in 30 days and includes it in a look. |
-| Check conditions | Sets conditions, notices layer/footwear guidance and explains a decision. |
-| Save and return | Saves an outfit and finds it after reload. |
-| Plan and wear | Schedules a look and understands that only Wear today logs wear history. |
+The avatar has shaded skin, facial features, hair and measurement-informed anatomy. Real garment photos are composited on that model. This is a local photo-placement preview, not generative photorealistic try-on, a body reconstruction or a size/fit prediction. A production rendering engine would be a separate integration; it is not present or simulated by a success screen.
 
-## Session rubric
+A front-facing garment cutout gives the best preview. The demo images are original, generated photographic cutouts with measured alpha bounds. Real uploads can be outlined manually. No garment illustrations or retailer-image fallbacks are used.
 
-Pass when the occasion is explicit, all proposed IDs exist in the catalog, a complete base and shoes are supplied, laundry is excluded, uncertain availability is disclosed, cold input includes a layer or a gap, recency uses actual logs, alternatives are available when inventory permits, and dress-code gaps are not disguised.
+## Verification performed
 
-The rules cannot verify ownership, fabric warmth, waterproofing or a venue dress code. The user's catalog and confirmation supply those inputs. Conditions are entered manually, not fetched from a forecast.
+The environment has macOS JavaScriptCore but no usable Node runtime or browser launch. A temporary compatibility runner executed the actual synchronous Node-style regression files: **59 passed**. Tests cover ownership, demo opt-in, suggestion completeness, weather/laundry/recency rules, storage/recovery, US measurements, avatar validation, safe rendering, selection conflicts, outline validation, stale-photo rejection and placement backup round trips.
 
-## Golden and adversarial scenarios
+A separate temporary DOM harness loaded the actual HTML and browser scripts with simulated browser APIs: **48 interaction checks passed**. These included setup/review/save, optional estimates, retaining old metric values, photo uploads, live garment layers, layer ordering, replacement of conflicting pieces, saving/canceling placements, saved-look reuse, retailer-example quarantine, guide lifecycle, dressed-demo startup, demo reset, and exact preservation of personal data while editing the demo.
 
-| Scenario | Expected behavior / implementation |
-|---|---|
-| Chilly rooftop dinner in 45 minutes | Dinner + chilly produces a full outfit and actual layer, a reason and alternatives when available. Tested. |
-| Workweek planning | Save looks and manually assign dates in Planner. Automatic five-day optimization is future work. |
-| Formal-ish garden party | Confirm the exact dress code yourself; the current model does not verify formal suitability. |
-| An absent dress | Never propose an unknown catalog ID. Tested; free-text parsing is not implemented. |
-| Work clothes for black tie | Show an explicit catalog/dress-code gap. Tested. |
-| Just order something | No shopping or financial-action tools are connected. |
-| Matching clothes in laundry | Show a gap rather than recommend unavailable items. Tested. |
-| Corrupt backup / full storage | Reject invalid data, retain the prior state, explain failure. Tested. |
+All five PNGs were visually inspected. Their dimensions and alpha-channel transparency were checked, and their normalized opaque bounds were used only as placement metadata. HTML labels/IDs/script targets, referenced files and Git whitespace checks were also checked.
 
-## OECs for a real pilot
+The harness does not verify actual CSS rendering, native pointer capture, touch behavior, browser storage quotas, video playback or screen-reader operation. Before accepting the visual design, open in a desktop and mobile browser, choose different skin tones/body measurements, add the blazer, swap to a dress, drag outline points with pointer and keyboard, save/reload, switch workspaces and verify personal data is unchanged.
 
-Treat the brief's targets as hypotheses: more than 70% of occasion sessions view a suggestion; more than 50% of those sessions select a look; more than 30% of confirmed outfits include a piece not worn in 30 days; more than 30% of confirmed looks are saved; more than 25% of saved looks are reused within 30 days. Also measure decision time and wardrobe breadth.
+## Pilot outcomes to observe
 
-These are not achieved results. No analytics are uploaded. Use a consented observation sheet with anonymous participant IDs, task start/finish times, story outcomes and comments. Agree on definitions and sample size before testing. Compare occasion-first and closet-first walkthroughs under the same dinner scenario, then merge the stronger elements based on evidence.
+- Can a user distinguish demo from personal clothing without explanation?
+- Can they enter height and three body circumferences using US measurements?
+- Can they upload/find a garment and see it on the model?
+- Can they understand and refine photo placement without mistaking it for fit simulation?
+- Can they assemble, save and reuse a combination from owned pieces?
+- Do Save, Plan and Wear today communicate distinct actions?
 
-## Next gates
-
-1. Observe five participants completing the core stories and correct confusion.
-2. Re-run regression checks after data-model or recommendation changes.
-3. Validate whether live weather, conversational input or bulk capture improves the measured outcomes before integrating services.
-4. Before public production use, add authenticated durable storage, operational monitoring, security review and broader accessibility/device testing.
-
-## Atelier and avatar update
-
-The new opening experience adds a personal-avatar setup, a photographic sample edit, and editorial branding informed by REVOLVE's storefront. Existing wardrobe IDs, wear logs, plans and backups remain in their existing storage model. The separate avatar profile contains the optional first name, appearance choices and six measurements in canonical centimeters; changing the display unit does not alter the underlying saved measurements.
-
-Avatar validation, exact photographic URL allowlisting and wardrobe round trips extend the existing regression checks to 37. In the implementation environment, Node and a working browser launch were unavailable. These synchronous tests were executed with macOS JavaScriptCore using a temporary Node test/assert/vm compatibility runner: 37 passed. A separate DOM harness using the actual HTML and scripts checked 25 interaction outcomes: setup progression, empty-field rejection, live preview, unit switching, profile persistence, cancel/retry/stale-tab behavior, guide loading and closing, collection expansion and adding, photo upload and outfit saving. Both harnesses used simulated browser APIs and do not verify rendering, network imagery, actual video playback, real storage quotas, or screen-reader behavior.
-
-Before accepting the visual redesign, open the site in a real browser on desktop and mobile. Confirm product photos load; compare the initial and saved-avatar views; complete setup by keyboard; test the centimeter/inch toggle; play and close the video; and create an outfit with an uploaded clothing photo. The avatar is expressly a stylized proportion preview rather than a 3D fit or facial-likeness system.
-
-
-## Photographic clothing follow-up
-
-Removed the wardrobe illustration renderer, illustration-color input and illustrated image fallbacks. The eight starter pieces now use REVOLVE product references and source links. Existing known starter SVGs migrate in memory on load, and on backup restore, while preserving IDs, outfits, plans, wear dates and availability. Uploaded photographs are unchanged. Unknown legacy sketches remain readable for recovery but render only a request for a photo. New pieces require photographs, and existing photographs can be retained during edits.
-
-Verification: all 42 synchronous regression checks passed using the JavaScriptCore compatibility runner described above. The expanded simulated DOM walkthrough passed 31 interactions, including no SVG clothing images, real-photo alternate handling, text fallback, photo-required creation and preserving photos during edits. HTML references and local assets were checked. Live image delivery and browser rendering still need a real-browser check because this environment cannot launch Chrome or reach external hosts from the shell.
+No pilot results or production engagement claims are asserted. Before public production use, evaluate a fitting/rendering service separately and design authentication, durable storage, consent and deployment protections appropriate to that integration.

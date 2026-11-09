@@ -2,7 +2,6 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const Avatar = require('../avatar-core.js');
 const F = require('../core.js');
-const catalog = require('../catalog.js');
 const input = (overrides = {}) => ({ ...Avatar.example, ...overrides });
 
 test('avatar data round-trips with all six canonical measurements', () => {
@@ -67,31 +66,38 @@ test('failed profile writes surface an error without replacing the saved profile
   assert.throws(() => Avatar.save(storage, input({ waist: 80 })), /Quota/);
   assert.equal(stored, before);
 });
-test('only exact sample catalog image URLs are permitted', () => {
-  for (const image of catalog.images) assert.ok(F.imageOK(image));
-  for (const image of ['https://example.com/a.jpg', catalog.images[0] + '?tracking=1', catalog.images[0].replace('https:', 'http:'), 'javascript:alert(1)', 'https://cdn.dummyjson.com.evil.com/photo.webp']) assert.equal(F.imageOK(image), false);
+test('uploaded photographs are allowed while external product photos cannot become owned pieces', () => {
+  for(const image of ['data:image/jpeg;base64,aGVsbG8=','data:image/png;base64,aGVsbG8=','data:image/webp;base64,aGVsbG8=']) assert.ok(F.photoOK(image));
+  for(const image of ['https://example.com/a.jpg','https://is4.revolveassets.com/images/p4/n/uv/SIMX-WP13_V1.jpg','javascript:alert(1)']) assert.equal(F.photoOK(image),false);
 });
-test('photographic catalog items survive wardrobe save and restore', () => {
-  const items = catalog.pieces.map((piece, n) => ({ ...piece, id: `sample-${n}` }));
-  const state = F.validate({ items, outfits: [{ id: 'look', name: 'After hours', occasion: 'Going out', itemIds: ['sample-0', 'sample-3'] }] });
-  assert.deepEqual(F.validate(JSON.parse(JSON.stringify(state))), state);
-  assert.equal(state.items[0].image, catalog.images[0]);
+test('earlier sample URLs remain readable for recovery but never enter outfit suggestions', () => {
+  const example={id:'old',name:'Earlier example',category:'Tops',color:'Red',occasion:'Casual',image:'https://is4.revolveassets.com/images/p4/n/uv/FREE-WS5542_V1.jpg'};
+  const data=F.validate({items:[example],outfits:[]});
+  assert.equal(data.items[0].origin,'unconfirmed');
+  assert.equal(F.isOwned(data.items[0]),false);
+  assert.equal(F.suggest(data.items).looks.length,0);
 });
-test('all current sample pieces have real photographic sources on REVOLVE', () => {
-  assert.equal(new Set(catalog.pieces.map(piece => piece.key)).size,catalog.pieces.length);
-  for (const piece of catalog.pieces) {
-    assert.ok(/^https:\/\/is[48]\.revolveassets\.com\/images\/p4\/n\/uv\/[\w-]+_V1\.jpg$/.test(piece.image));
-    assert.ok(piece.source.startsWith('https://www.revolve.com/'));
-    assert.ok(F.photoOK(piece.image));
-    assert.ok(F.photoOK(piece.alternate));
-    assert.equal(catalog.byImage(piece.alternate).key,piece.key);
-  }
-  for(const category of ['Tops','Bottoms','Layers','Dresses','Shoes']) assert.ok(catalog.pieces.some(piece=>piece.category===category));
-});
-test('legacy clothing SVGs are readable for recovery but never qualify as photographs', () => {
+test('legacy SVGs are recoverable but never qualify as uploaded garment photographs', () => {
   const old='data:image/svg+xml;charset=utf-8,%3Csvg%2F%3E';
-  assert.ok(F.imageOK(old));
-  assert.equal(F.photoOK(old),false);
-  const custom={id:'custom',name:'My original sketch',category:'Tops',color:'Red',image:old};
-  assert.equal(catalog.migrateIllustrated([custom])[0],custom);
+  assert.ok(F.imageOK(old));assert.equal(F.photoOK(old),false);
+});
+test('US setup accepts feet and inches and stores canonical centimeters', () => {
+  const result=Avatar.fromUS({...input(),feet:5,inches:6,chest:34,waist:28,hips:38,inseam:'',shoulders:''});
+  assert.equal(result.height,167.64);assert.equal(result.chest,86.36);assert.equal(result.unit,'in');
+  assert.deepEqual(result.estimated,['inseam','shoulders']);
+  assert.equal(Avatar.heightLabel(result.height),'5 ft 6 in');
+});
+test('US setup rejects fractional feet and overflowing height inches', () => {
+  const data={...input(),feet:5,inches:6,chest:34,waist:28,hips:38,inseam:30,shoulders:15};
+  assert.throws(()=>Avatar.fromUS({...data,feet:5.5}));assert.throws(()=>Avatar.fromUS({...data,inches:12}));
+  assert.throws(()=>Avatar.fromUS({...data,waist:''}));
+});
+test('a feet-only height assumes zero additional inches', () => {
+  const p=Avatar.fromUS({...input(),feet:6,inches:'',chest:36,waist:30,hips:38,inseam:'',shoulders:''});
+  assert.equal(p.height,182.88);assert.equal(Avatar.heightLabel(p.height),'6 ft 0 in');
+});
+test('avatar gradient IDs are scoped so separate previews do not overwrite appearance', () => {
+  const home=Avatar.svg(input(),'','home');const setup=Avatar.svg(input({skin:Avatar.tones[5]}),'','setup');
+  assert.ok(home.includes('fc-home-skin'));assert.ok(setup.includes('fc-setup-skin'));
+  assert.ok(!home.includes('fc-setup-skin'));
 });

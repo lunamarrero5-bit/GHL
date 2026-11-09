@@ -8,23 +8,26 @@
   <title>FITCHECK — The Personal Wardrobe Atelier</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="atelier.css">
-  <script src="catalog.js" defer></script>
   <script src="avatar-core.js" defer></script>
+  <script src="tryon-core.js" defer></script>
+  <script src="demo.js" defer></script>
   <script src="core.js" defer></script>
   <script src="script.js" defer></script>
   <script src="experience.js" defer></script>
+  <script src="tryon.js" defer></script>
   <script src="atelier.js" defer></script>
 </head>
 <body>
   <noscript><p class="recovery-banner">FitCheck needs JavaScript to manage your closet. Please enable JavaScript and reload this page.</p></noscript>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="announcement">YOUR WARDROBE, CONSIDERED. <span>THE PERSONAL STYLING EXPERIENCE</span></div>
+  <div class="demo-banner" id="wardrobe-mode-banner"><div><strong id="wardrobe-mode-label">DEMO DRESSING ROOM</strong><span id="wardrobe-mode-caption">Sample garments to try the experience. Your own wardrobe stays separate.</span></div><div><button id="reset-demo" class="text-button">Reset demo</button><button id="switch-wardrobe-mode" class="button dark">Use my own wardrobe ↗</button></div></div>
   <header class="header">
     <a class="logo" href="index.html" aria-label="FitCheck home">FITCHECK<span class="brand-dot"> / STUDIO</span></a>
     <nav aria-label="Main navigation">
       <button class="nav-button active" data-view="today" aria-pressed="true">Dressing room</button>
       <button class="nav-button" data-view="closet" aria-pressed="false">My wardrobe</button>
-      <button class="nav-button" data-view="builder" aria-pressed="false">Outfit builder</button>
+      <button class="nav-button" data-view="builder" aria-pressed="false">Build a Look</button>
       <button class="nav-button" data-view="saved" aria-pressed="false">Saved outfits</button>
       <button class="nav-button" data-view="planner" aria-pressed="false">Planner</button>
       <button class="nav-button" data-view="insights" aria-pressed="false">Insights & backup</button>
@@ -39,7 +42,7 @@
           <h1>Your style.<br>Your silhouette.<br><em>Entirely you.</em></h1>
           <p class="intro">A wardrobe worth rediscovering.<br>A dressing room made around you.</p>
           <button class="button dark" id="create-avatar">CREATE MY AVATAR <span aria-hidden="true">↗</span></button>
-          <button class="text-button hero-secondary" id="start-outfit">EXPLORE MY WARDROBE EXPERIENCE →</button>
+          <button class="text-button hero-secondary" id="start-outfit">BUILD A LOOK →</button>
           <div class="hero-footnote"><span class="small-rule"></span><p>YOUR MEASUREMENTS. YOUR PERSPECTIVE.<br>A MORE PERSONAL WAY TO GET DRESSED.</p></div>
         </div>
         <div class="avatar-stage">
@@ -48,24 +51,14 @@
           <div class="avatar-dimension" id="avatar-height">MADE TO YOUR MEASUREMENTS</div>
           <div class="stage-bottomline"><span id="avatar-caption">Make this silhouette yours.</span><button id="edit-avatar" class="text-button">PERSONALIZE ↗</button></div>
         </div>
-        <div class="editorial-column">
-          <div class="editorial-image"><span class="editorial-number">THE EVENING EDIT / 001</span><img src="https://is8.revolveassets.com/images/p4/n/uv/SPDW-WD1742_V1.jpg" alt="superdown Skye mini dress in black, photographed for REVOLVE" fetchpriority="high" referrerpolicy="no-referrer"><div class="editorial-image-fallback" hidden>Photo unavailable</div></div>
-          <p class="eyebrow">ALREADY IN YOUR ORBIT</p><h2>The art of<br><em>getting dressed.</em></h2><p>Less searching. More possibility.</p><button class="text-button" id="explore-edit">DISCOVER THE EDIT →</button>
-        </div>
       </div>
       <div class="brand-values"><span>01 <strong>MAKE IT PERSONAL</strong></span><span>02 <strong>REDISCOVER YOUR WARDROBE</strong></span><span>03 <strong>CURATE YOUR EVERYDAY</strong></span></div>
-      <div class="collection-section" id="collection-section">
-        <div class="section-heading"><div><p class="eyebrow">THE FITCHECK EDIT</p><h2>Real pieces. <em>New possibilities.</em></h2></div><button class="text-button" id="view-all-edit">VIEW ALL 8 PIECES ↗</button></div>
-        <p class="collection-note">A photographic sample collection to explore. Add a piece to try the experience, or upload the clothes you own.</p>
-        <div class="editorial-grid" id="editorial-grid"></div>
-        <p class="asset-note">Reference photography from REVOLVE. View the original product through each source link. These are sample pieces; FitCheck is independent of REVOLVE.</p>
-      </div>
     </section>
 
     <section id="today-view" class="view" aria-labelledby="today-heading">
       <div class="section-heading"><div><p class="eyebrow">YOUR DAILY STYLE APPOINTMENT</p><h2 id="today-heading">What are you dressing for?</h2></div><span class="pill">PERSONAL WARDROBE STYLING</span></div>
       <p class="section-intro">A few thoughtful combinations, with a reason for every piece. You make the final call.</p>
-      <p class="demo-note">Your starter wardrobe includes example pieces. Add your own photos to make it personal.</p>
+      <p class="demo-note">Start with the clothes you already own. Upload your garment photos in My wardrobe, then combine them in Build a Look.</p>
       <div class="styling-layout">
         <form id="style-form" class="context-panel">
           <label for="style-occasion">01 / The occasion</label><select id="style-occasion"><option value="Casual">Everyday & weekend</option><option value="Work">Office & client meetings</option><option value="Going out">Dinner & going out</option><option value="Formal">Black tie & formal</option></select>
@@ -74,14 +67,14 @@
           <div class="form-columns"><div><label for="style-temp">Temperature (optional)</label><input id="style-temp" type="number" min="-60" max="140" placeholder="e.g. 60"></div><div><label for="temp-unit">Unit</label><select id="temp-unit"><option value="F">°F</option><option value="C">°C</option></select></div></div>
           <label class="check-label"><input type="checkbox" id="favor-unworn" checked> Bring underused pieces back into rotation</label>
           <button class="button dark full" type="submit">Find outfit ideas ↗</button>
-          <p class="field-hint">Uses your catalog, occasion and wear history. Rule-based suggestions; no AI service or shopping.</p>
+          <p class="field-hint">Uses your wardrobe, occasion and logged wear history.</p>
         </form>
         <div id="suggestions" class="suggestion-area" aria-live="polite"><div class="welcome-card"><span class="large-spark">FC</span><h3>Consider this your<br>daily style appointment.</h3><p>Choose the occasion. Rediscover a combination. Make an entrance in something you already own.</p><div class="journey"><span>01 THE MOMENT</span><span>02 THE LOOK</span><span>03 YOUR WAY</span></div></div></div>
       </div>
     </section>
 
     <section id="closet-view" class="view" aria-labelledby="closet-heading" hidden>
-      <div class="section-heading"><div><p class="eyebrow">YOUR PERSONAL COLLECTION</p><h2 id="closet-heading">My closet <span class="count" id="closet-count">0</span></h2></div><button class="button dark" id="add-item">+ Add a piece</button></div>
+      <div class="section-heading"><div><p class="eyebrow">CLOTHES YOU ALREADY OWN</p><h2 id="closet-heading">My closet <span class="count" id="closet-count">0</span></h2></div><button class="button dark" id="add-item">+ Add a piece</button></div>
       <div class="toolbar">
         <label class="search-label">Search your closet<input type="search" id="closet-search" placeholder="Name or color…" maxlength="80"></label>
         <div class="categories" role="group" aria-label="Filter by category">
@@ -89,17 +82,17 @@
         </div>
         <label class="occasion-filter">Occasion <select id="occasion-filter"><option value="All">Any occasion</option><option>Casual</option><option>Work</option><option>Going out</option></select></label>
       </div>
-      <div class="closet-extras"><label class="check-label"><input type="checkbox" id="unworn-filter"> Not worn in 30 days</label><button class="text-button" id="reset-filters">Clear filters</button><span id="filter-summary" role="status"></span></div>
+      <p id="ownership-notice" class="demo-note" hidden></p><div class="closet-extras"><label class="check-label"><input type="checkbox" id="review-examples"> Review earlier examples needing your own photo</label><label class="check-label"><input type="checkbox" id="unworn-filter"> Not worn in 30 days</label><button class="text-button" id="reset-filters">Clear filters</button><span id="filter-summary" role="status"></span></div>
       <div id="closet-grid" class="closet-grid"></div>
-      <p class="empty" id="closet-empty" hidden>No pieces here yet. Add a piece or try another filter.</p>
+      <p class="empty" id="closet-empty" hidden>Your wardrobe starts with you. Upload a photo of a piece you own to get started, or clear your filters.</p>
     </section>
 
     <section id="builder-view" class="view" aria-labelledby="builder-heading" hidden>
-      <div class="section-heading"><div><p class="eyebrow">A LITTLE MIX. A LITTLE MATCH.</p><h2 id="builder-heading">Build your next look</h2></div></div>
-      <p class="section-intro">Pick pieces from your closet, then give your combination a name.</p>
+      <div class="section-heading"><div><p class="eyebrow">A LITTLE MIX. A LITTLE MATCH.</p><h2 id="builder-heading">Build a Look</h2></div></div>
+      <p class="section-intro">Choose your own clothes and see the combination on your personalized model. Select one piece per category; selecting a dress replaces the top and bottoms.</p>
       <div class="builder-layout">
         <div><h3>Choose your pieces</h3><div id="builder-grid" class="closet-grid builder-grid"></div><p id="builder-empty" class="empty" hidden>Your closet is empty. Add a piece in My closet to get started.</p></div>
-        <aside class="outfit-panel"><div class="builder-avatar-heading"><span class="eyebrow">YOUR PERSONAL FIT STUDIO</span><button class="text-button" id="builder-edit-avatar">EDIT ↗</button></div><div id="builder-avatar" class="builder-avatar"></div><p class="field-hint">Your body preview alongside your chosen pieces. Garments are shown separately; fit and drape are not simulated.</p><h3>Your outfit <span id="selection-count" class="count">0</span></h3><div id="selected-items"></div><form id="outfit-form"><label for="outfit-name">Outfit name</label><input id="outfit-name" name="name" maxlength="60" placeholder="e.g. Office Monday" required><label for="outfit-occasion">Occasion</label><select id="outfit-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select><button class="button dark full" type="submit">Save this outfit ♡</button><button class="text-button full" type="button" id="clear-selection">Clear selection</button></form></aside>
+        <aside class="outfit-panel"><div class="builder-avatar-heading"><span class="eyebrow">YOUR PERSONAL DRESSING ROOM</span><button class="text-button" id="builder-edit-avatar">EDIT ↗</button></div><div id="builder-avatar" class="builder-avatar"></div><p id="tryon-status" class="field-hint" role="status">Choose a piece to dress your model.</p><p class="field-hint">Live photo-placement preview. Use Adjust photo to outline the garment and refine its position. This preview does not predict fit or fabric drape.</p><h3>Your outfit <span id="selection-count" class="count">0</span></h3><div id="selected-items"></div><form id="outfit-form"><label for="outfit-name">Outfit name</label><input id="outfit-name" name="name" maxlength="60" placeholder="e.g. Office Monday" required><label for="outfit-occasion">Occasion</label><select id="outfit-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select><button class="button dark full" type="submit">Save this outfit ♡</button><button class="text-button full" type="button" id="clear-selection">Clear selection</button></form></aside>
       </div>
     </section>
 
@@ -123,7 +116,7 @@
   <footer><div><a href="index.html" class="logo">FITCHECK</a><p>THE PERSONAL WARDROBE ATELIER</p></div><span>Your wardrobe. A new perspective.</span><div class="footer-actions"><button class="text-button" id="footer-avatar">MY AVATAR</button><button class="text-button" id="open-guide">MEASUREMENT GUIDE ↗</button></div></footer>
 
   <dialog id="avatar-dialog" class="avatar-dialog" aria-labelledby="avatar-dialog-title">
-    <div class="avatar-dialog-top"><a class="logo" href="#" id="avatar-brand">FITCHECK</a><span>YOUR PERSONAL FIT STUDIO</span><button class="icon-button" id="close-avatar" aria-label="Close avatar setup">×</button></div>
+    <div class="avatar-dialog-top"><a class="logo" href="#" id="avatar-brand">FITCHECK</a><span>YOUR PERSONAL DRESSING ROOM</span><button class="icon-button" id="close-avatar" aria-label="Close avatar setup">×</button></div>
     <div class="setup-layout">
       <div class="setup-content">
         <ol class="setup-progress" aria-label="Avatar setup progress"><li data-setup-step="0" aria-current="step">01 <span>THE DETAILS</span></li><li data-setup-step="1">02 <span>THE MEASUREMENTS</span></li><li data-setup-step="2">03 <span>THE REVEAL</span></li></ol>
@@ -135,9 +128,10 @@
             <div class="form-columns"><div><label for="avatar-hairstyle">Hair style</label><select id="avatar-hairstyle"><option value="long">Long</option><option value="bob">Bob</option><option value="short">Short</option><option value="none">No hair</option></select></div><fieldset class="swatch-fieldset"><legend>Hair color</legend><div class="swatches compact" id="hair-swatches"></div></fieldset></div>
           </div>
           <div class="setup-step" id="setup-step-1" hidden>
-            <p class="eyebrow">TAILORED TO YOUR PROPORTIONS</p><h2>Your body.<br><em>Your numbers.</em></h2><p class="setup-intro">Use a soft tape over light, close-fitting clothing. Stand naturally and keep the tape level and comfortably snug.</p>
+            <p class="eyebrow">TAILORED TO YOUR PROPORTIONS</p><h2>Your body.<br><em>Your numbers.</em></h2><p class="setup-intro">You only need height, chest/bust, waist and hips. Use a soft tape over light clothing, standing naturally. Inseam and shoulder width can be estimated if you leave them blank.</p>
             <button class="video-teaser" id="setup-guide" type="button"><span class="play-circle" aria-hidden="true">▶</span><span><strong>A guide to measuring yourself</strong><small>Watch the tutorial + follow the six-step guide</small></span><span aria-hidden="true">↗</span></button>
-            <fieldset class="unit-fieldset"><legend>Measurements in</legend><label><input name="avatar-unit" type="radio" value="cm" checked> Centimeters</label><label><input name="avatar-unit" type="radio" value="in"> Inches</label></fieldset>
+            <p class="us-measurement-note">US measurements · Height in feet & inches. All other measurements in inches.</p>
+            <fieldset class="height-fieldset"><legend>01 / Height</legend><div class="form-columns"><div><label for="height-feet">Feet</label><input type="number" id="height-feet" min="3" max="7" step="1" inputmode="numeric" placeholder="5" required></div><div><label for="height-inches">Inches</label><input type="number" id="height-inches" min="0" max="11.9" step="0.1" inputmode="decimal" placeholder="6"></div></div></fieldset>
             <div class="measurement-fields" id="measurement-fields"></div>
             <p class="measurement-help" id="measurement-help" aria-live="polite">Select a field for a measuring tip and a highlighted guide on your avatar.</p>
           </div>
@@ -145,7 +139,7 @@
             <p class="eyebrow">CONSIDER IT PERSONAL</p><h2>A silhouette<br><em>of your own.</em></h2><p class="setup-intro">Your measurements shape this stylized avatar. It’s your starting point for a more personal wardrobe experience.</p>
             <dl id="measurement-summary" class="measurement-summary"></dl>
             <p class="profile-privacy">Your name and measurements stay in this browser. You can edit, export, or delete your avatar anytime.</p>
-            <p class="field-hint">This is an approximate 2D illustration, not a body scan or a guarantee of clothing fit. Clothing photos are displayed separately.</p>
+            <p class="field-hint">Your measurements control a shaded body model. Clothes are placed on the model using your garment photos; this is a visual styling preview, not a size or fit guarantee.</p>
           </div>
           <p class="form-error" id="avatar-error" role="alert"></p>
           <div class="setup-actions"><button type="button" class="text-button" id="setup-back" hidden>← BACK</button><button type="submit" class="button dark" id="setup-next">CONTINUE <span aria-hidden="true">→</span></button></div>
@@ -163,6 +157,25 @@
     <p class="field-hint">Video by Crafty Gemini. Playing loads YouTube. If playback is unavailable, <a href="https://www.youtube.com/watch?v=ajdM2TqRehI" target="_blank" rel="noopener noreferrer">watch on YouTube ↗</a> or follow the illustrated guide below.</p>
     <div id="measurement-guide-grid" class="measurement-guide-grid"></div>
     <a class="guide-source text-button" href="https://craftygemini.com/2018/04/sewing-clothes-video-series-take-body-measurements.html" target="_blank" rel="noopener noreferrer">VIDEO & MEASUREMENT REFERENCE: CRAFTY GEMINI ↗</a>
+  </dialog>
+
+  <dialog id="garment-dialog" class="garment-dialog" aria-labelledby="garment-title">
+    <div class="dialog-heading"><div><p class="eyebrow">YOUR CLOTHES. YOUR MODEL.</p><h2 id="garment-title">Adjust your garment</h2></div><button type="button" class="icon-button" id="close-garment" aria-label="Close garment adjustment">×</button></div>
+    <p class="section-intro">Outline just the clothing in your photo, then position it on your model. A front-facing flat-lay photo gives the cleanest result. If someone is wearing the garment, exclude their face and skin from the outline.</p>
+    <div class="garment-editor-layout"><div>
+      <p class="field-hint" id="outline-instructions">Drag numbered points around the garment.</p>
+      <div class="outline-stage" id="outline-stage"><img id="outline-photo" alt="Your garment photo"><svg id="outline-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+      <div class="outline-actions"><button type="button" class="text-button" id="add-outline-point" aria-pressed="false">+ Add outline point</button><button type="button" class="text-button" id="remove-outline-point">Remove selected point</button><button type="button" class="text-button" id="whole-photo">Use whole photo</button></div>
+      <p class="field-hint">Keyboard: Tab to a numbered point, then use arrow keys to move it. Hold Shift for larger moves.</p>
+      <div class="placement-sliders">
+        <label for="garment-x">Move left / right <output id="garment-x-value">0</output><input type="range" id="garment-x" min="-100" max="100" step="1"></label>
+        <label for="garment-y">Move up / down <output id="garment-y-value">0</output><input type="range" id="garment-y" min="-150" max="150" step="1"></label>
+        <label for="garment-width">Width <output id="garment-width-value">100%</output><input type="range" id="garment-width" min="0.35" max="2.5" step="0.01"></label>
+        <label for="garment-height">Length <output id="garment-height-value">100%</output><input type="range" id="garment-height" min="0.35" max="2.5" step="0.01"></label>
+        <label for="garment-rotation">Rotation <output id="garment-rotation-value">0°</output><input type="range" id="garment-rotation" min="-45" max="45" step="1"></label>
+      </div>
+    </div><aside><div id="garment-preview" class="garment-preview"></div><p class="field-hint">A photo-based styling preview. Scale and position are visual adjustments, not garment dimensions or fit predictions.</p></aside></div>
+    <p id="garment-error" class="form-error" role="alert"></p><div class="setup-actions"><button type="button" class="text-button" id="reset-garment">Reset outline & position</button><button type="button" class="button dark" id="save-garment">Save garment placement ↗</button></div>
   </dialog>
 
   <dialog id="item-dialog" aria-labelledby="dialog-title">

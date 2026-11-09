@@ -6,7 +6,7 @@
   const tones = ['#f0d3bd', '#deb595', '#c59170', '#aa7455', '#80513e', '#50352d'];
   const hairColors = ['#25201d', '#62412b', '#b18b51', '#a74e32', '#aaa6a0'];
   const hairStyles = ['long', 'bob', 'short', 'none'];
-  const example = { name: '', unit: 'cm', skin: tones[2], hair: hairColors[0], hairstyle: 'long', height: 168, chest: 90, waist: 72, hips: 98, inseam: 78, shoulders: 39 };
+  const example = { name: '', unit: 'in', skin: tones[2], hair: hairColors[0], hairstyle: 'long', height: 168, chest: 90, waist: 72, hips: 98, inseam: 78, shoulders: 39 };
   const cm = (value, unit) => Number(value) * (unit === 'in' ? 2.54 : 1);
   const display = (value, unit) => Number((value / (unit === 'in' ? 2.54 : 1)).toFixed(1));
   function validate(input) {
@@ -22,6 +22,10 @@
     }
     if (result.inseam >= result.height * 0.65) throw Error('Please check your height and inseam. Measure inseam from the inner leg to the ankle.');
     if (result.shoulders >= result.height * 0.45) throw Error('Please check shoulder width. Measure across your back, shoulder tip to shoulder tip.');
+    if (input.estimated !== undefined) {
+      if (!Array.isArray(input.estimated) || input.estimated.length > 2 || !input.estimated.every(key => ['inseam','shoulders'].includes(key)) || new Set(input.estimated).size !== input.estimated.length) throw Error('Invalid estimated measurements.');
+      result.estimated = [...input.estimated];
+    }
     return result;
   }
   function fromForm(input) {
@@ -37,24 +41,78 @@
     storage.setItem('fitcheck-avatar-v1', JSON.stringify(profile));
     return profile;
   }
-  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-  function svg(input = example, guide = '') {
-    const p = validate(input);
-    const center = 160;
-    const scale = 390 / p.height;
-    // Circumferences inform a front-view illustration; they do not reconstruct a body.
-    const chest = clamp(p.chest / Math.PI * scale * 0.53, 25, 81);
-    const waist = clamp(p.waist / Math.PI * scale * 0.52, 20, 78);
-    const hips = clamp(p.hips / Math.PI * scale * 0.53, 27, 87);
-    const shoulder = clamp(p.shoulders * scale * 0.5, 33, 90);
-    const crotch = clamp(465 - p.inseam * scale, 240, 315);
-    const hipY = crotch - 28;
-    const hairBack = p.hairstyle === 'long' ? `<path d="M126 80Q125 32 160 32Q200 32 195 86L207 195Q160 213 115 192Z" fill="${p.hair}"/>` : p.hairstyle === 'bob' ? `<path d="M127 78Q125 33 160 33Q199 33 195 83L201 118Q160 137 120 118Z" fill="${p.hair}"/>` : '';
-    const hairFront = p.hairstyle === 'none' ? '' : `<path d="M133 66Q130 35 160 35Q192 34 189 71Q172 60 166 49Q155 66 133 66Z" fill="${p.hair}"/>`;
-    const guideLine = (key, y, width) => guide === key ? `<g stroke="#a87945" stroke-width="2" stroke-dasharray="5 4"><path d="M${center-width-20} ${y}H${center+width+20}"/></g>` : '';
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 520" role="img" aria-label="Personalized stylized avatar"><ellipse cx="160" cy="490" rx="74" ry="9" fill="#000" opacity=".07"/>${hairBack}<g fill="${p.skin}"><path d="M146 91H174L177 122 160 138 143 122Z"/><ellipse cx="160" cy="73" rx="27" ry="35"/><path d="M${160-shoulder} 123Q${160-shoulder-15} 126 ${160-shoulder-19} 159L${160-hips-24} 290Q${160-hips-26} 308 ${160-hips-17} 310Q${160-hips-9} 309 ${160-hips-12} 289L${160-shoulder+6} 165 160 158 ${160+shoulder-6} 165 ${160+hips+12} 289Q${160+hips+9} 309 ${160+hips+17} 310Q${160+hips+26} 308 ${160+hips+24} 290L${160+shoulder+19} 159Q${160+shoulder+15} 126 ${160+shoulder} 123Z"/><path d="M${160-hips} ${hipY}Q${160-hips-3} ${crotch+14} ${160-hips+5} ${crotch+50}L128 465 121 479Q128 487 146 479L161 ${crotch+34} 174 479Q193 487 200 479L192 465 ${160+hips-5} ${crotch+50}Q${160+hips+3} ${crotch+14} ${160+hips} ${hipY}Z"/></g><path d="M${160-shoulder} 124 143 115Q160 130 177 115L${160+shoulder} 124 ${160+chest} 174Q${160+waist} 202 ${160+waist} 219H${160-waist}Q${160-waist} 202 ${160-chest} 174Z" fill="#e8e0d4" stroke="#bcb1a1" stroke-width=".8"/><path d="M${160-waist} 217H${160+waist}Q${160+hips} ${hipY-10} ${160+hips} ${hipY+12}L${160+hips-5} 324Q186 337 164 322L160 ${crotch+4} 156 322Q133 337 ${160-hips+5} 324L${160-hips} ${hipY+12}Q${160-hips} ${hipY-10} ${160-waist} 217Z" fill="#ded3c1" stroke="#bcb1a1" stroke-width=".8"/><path d="M${160-waist} 221H${160+waist}" stroke="#bcb1a1" fill="none"/>${hairFront}<path d="M149 78h4M169 78h4" stroke="#49392f" stroke-width="1.5" stroke-linecap="round"/><path d="M155 94Q160 97 165 94" stroke="#915f50" fill="none" stroke-linecap="round"/>${guideLine('chest',174,chest)}${guideLine('waist',217,waist)}${guideLine('hips',hipY,hips)}${guide === 'height' ? '<path d="M55 35V480M49 35H61M49 480H61" stroke="#a87945" fill="none" stroke-width="2"/>' : ''}${guide === 'inseam' ? `<path d="M160 ${crotch+8}V470" stroke="#a87945" stroke-dasharray="5 4" stroke-width="2"/>` : ''}${guideLine('shoulders',124,shoulder)}</svg>`;
+  function usHeight(height) {
+    const total = height / 2.54;
+    let feet = Math.floor(total / 12), inches = Number((total - feet * 12).toFixed(1));
+    if (inches === 12) { feet++; inches = 0; }
+    return { feet, inches };
   }
-  const api = { ranges, labels, tones, hairColors, hairStyles, example, cm, display, validate, fromForm, save, svg };
+  function heightLabel(height) { const {feet, inches} = usHeight(height); return `${feet} ft ${inches} in`; }
+  function fromUS(input) {
+    if (input.feet === '' || !Number.isInteger(Number(input.feet)) || Number(input.feet) < 3 || Number(input.feet) > 7) throw Error('Enter your height in feet (3–7) and inches (0–11.9).');
+    const inches = input.inches === '' ? 0 : Number(input.inches);
+    if (!Number.isFinite(inches) || inches < 0 || inches >= 12) throw Error('The inches part of height must be between 0 and 11.9.');
+    const result = {...input, unit:'in', height: Number(((Number(input.feet)*12 + inches)*2.54).toFixed(3)), estimated:[]};
+    for (const key of ['chest','waist','hips','inseam','shoulders']) {
+      if ((input[key] === '' || input[key] === undefined) && ['inseam','shoulders'].includes(key)) {
+        result[key] = Number((result.height * (key === 'inseam' ? .465 : .232)).toFixed(3)); result.estimated.push(key);
+      } else {
+        if (input[key] === '' || input[key] === undefined) throw Error(`Enter your ${labels[key].toLowerCase()} in inches.`);
+        result[key] = Number(cm(input[key], 'in').toFixed(3));
+      }
+    }
+    return validate(result);
+  }
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  function geometry(input = example) {
+    const p = validate(input), scale = 390 / p.height;
+    return {
+      chest:clamp(p.chest / Math.PI * scale * .53,25,81),
+      waist:clamp(p.waist / Math.PI * scale * .52,20,78),
+      hips:clamp(p.hips / Math.PI * scale * .53,27,87),
+      shoulder:clamp(p.shoulders * scale * .5,33,90),
+      crotch:clamp(465 - p.inseam * scale,240,315)
+    };
+  }
+  function shade(hex, amount) {
+    return '#' + [1,3,5].map(index => clamp(parseInt(hex.slice(index,index+2),16)+amount,0,255).toString(16).padStart(2,'0')).join('');
+  }
+  function svg(input = example, guide = '', namespace = 'default') {
+    const p = validate(input), {chest,waist,hips,shoulder,crotch} = geometry(p);
+    const hipY = crotch-28;
+    const ns = 'fc-' + String(namespace).replace(/[^a-z0-9-]/gi,'').slice(0,40);
+    const light = shade(p.skin,22), shadow = shade(p.skin,-30), deep = shade(p.skin,-55);
+    const guideLine = (key,y,width) => guide === key ? `<path d="M${160-width-15} ${y}H${160+width+15}" fill="none" stroke="#a87945" stroke-width="1.5" stroke-dasharray="5 4"/>` : '';
+    const hairBack = p.hairstyle==='long' ? `<path d="M130 63Q128 30 160 28Q198 29 194 76L203 176Q191 192 175 183L145 181Q123 188 117 171Z" fill="url(#${ns}-hair)"/>` : p.hairstyle==='bob' ? `<path d="M130 62Q128 30 160 29Q196 28 193 77L198 118Q178 133 157 124Q136 134 122 119Z" fill="url(#${ns}-hair)"/>` : '';
+    const hairFront = p.hairstyle==='none' ? '' : p.hairstyle==='short' ? `<path d="M135 64Q128 35 153 31Q182 25 190 53L187 66Q168 52 162 45Q151 58 135 64Z" fill="url(#${ns}-hair)"/>` : `<path d="M133 67Q128 32 160 30Q194 30 188 74Q178 65 174 49L162 40Q151 59 133 67Z" fill="url(#${ns}-hair)"/><path d="M162 36Q149 49 141 52" stroke="${shade(p.hair,24)}" stroke-width="1.2" fill="none" opacity=".6"/>`;
+    const arms = [-1,1].map(side => {
+      const x=160+side*shoulder;
+      return `<path d="M${x} 126Q${x+side*13} 131 ${x+side*14} 154L${x+side*21} 212 ${x+side*24} 277Q${x+side*29} 291 ${x+side*22} 304Q${x+side*18} 308 ${x+side*15} 299L${x+side*14} 287Q${x+side*9} 287 ${x+side*10} 279L${x+side*5} 218 ${x-side*7} 163Z" fill="url(#${ns}-skin)" stroke="${shadow}" stroke-width=".5"/><path d="M${x+side*13} 213L${x+side*17} 270" stroke="${deep}" stroke-width=".7" opacity=".2"/>`;
+    }).join('');
+    const legs = [-1,1].map(side => {
+      const outer=160+side*hips, ankle=160+side*24;
+      return `<path d="M160 ${crotch+7}Q${160+side*9} ${crotch-10} ${outer} ${hipY}Q${outer+side*4} ${crotch+35} ${outer-side*4} ${crotch+62}L${ankle+side*8} 372Q${ankle+side*13} 401 ${ankle+side*3} 445L${ankle+side*2} 467 ${ankle+side*10} 478Q${ankle+side*12} 484 ${ankle-side*12} 482L${ankle-side*10} 467 ${ankle-side*9} 418Q${ankle-side*15} 395 ${ankle-side*9} 374L${160+side*8} ${crotch+54}Z" fill="url(#${ns}-leg)" stroke="${shadow}" stroke-width=".5"/><ellipse cx="${ankle}" cy="373" rx="10" ry="8" fill="${light}" opacity=".2"/><path d="M${ankle+side*4} 393Q${ankle+side*7} 416 ${ankle} 447" stroke="${deep}" opacity=".13" fill="none"/>`;
+    }).join('');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 520" role="img" aria-label="Personalized shaded body model"><defs>
+      <linearGradient id="${ns}-skin" x1="0" x2="1"><stop stop-color="${shadow}"/><stop offset=".37" stop-color="${light}"/><stop offset=".72" stop-color="${p.skin}"/><stop offset="1" stop-color="${shadow}"/></linearGradient>
+      <radialGradient id="${ns}-face" cx=".42" cy=".34" r=".8"><stop stop-color="${light}"/><stop offset=".6" stop-color="${p.skin}"/><stop offset="1" stop-color="${shadow}"/></radialGradient>
+      <linearGradient id="${ns}-leg" x1="0" x2="1"><stop stop-color="${shadow}"/><stop offset=".45" stop-color="${light}"/><stop offset=".7" stop-color="${p.skin}"/><stop offset="1" stop-color="${shadow}"/></linearGradient>
+      <linearGradient id="${ns}-hair" x1="0" x2="1"><stop stop-color="${p.hair}"/><stop offset=".48" stop-color="${shade(p.hair,25)}"/><stop offset=".6" stop-color="${p.hair}"/><stop offset="1" stop-color="${shade(p.hair,-10)}"/></linearGradient>
+      <linearGradient id="${ns}-base" x1="0" x2="1"><stop stop-color="#b8aa96"/><stop offset=".4" stop-color="#ede5d9"/><stop offset=".65" stop-color="#e0d3c0"/><stop offset="1" stop-color="#b8aa96"/></linearGradient>
+    </defs><ellipse cx="160" cy="490" rx="62" ry="6" fill="#000" opacity=".09"/>${hairBack}${arms}${legs}
+    <path d="M147 94H173L176 118 160 135 144 118Z" fill="url(#${ns}-skin)"/><path d="M147 104Q160 115 173 104" fill="none" stroke="${shadow}" stroke-width="3" opacity=".4"/>
+    <path d="M${160-shoulder} 126Q132 121 145 114Q160 126 175 114Q188 121 ${160+shoulder} 126L${160+chest} 174Q${160+waist-4} 199 ${160+waist} 221Q${160+hips} 247 ${160+hips} ${hipY+10}Q160 ${crotch+15} ${160-hips} ${hipY+10}Q${160-hips} 247 ${160-waist} 221Q${160-waist+4} 199 ${160-chest} 174Z" fill="url(#${ns}-base)" stroke="#b5a791" stroke-width=".6"/>
+    <path d="M143 119Q160 131 177 119M${160-waist} 221Q160 227 ${160+waist} 221" stroke="#b5a791" stroke-width=".8" fill="none"/>
+    <path d="M${160-hips} ${hipY}Q160 ${hipY+17} ${160+hips} ${hipY}L${160+hips-5} ${crotch+36}Q180 ${crotch+45} 163 ${crotch+33}L160 ${crotch+12} 157 ${crotch+33}Q140 ${crotch+45} ${160-hips+5} ${crotch+36}Z" fill="url(#${ns}-base)" stroke="#b5a791" stroke-width=".6"/>
+    <ellipse cx="133" cy="73" rx="4" ry="8" fill="${shadow}"/><ellipse cx="187" cy="73" rx="4" ry="8" fill="${shadow}"/>
+    <path d="M134 59Q135 35 160 35Q185 35 186 59L184 85Q180 103 160 110Q140 103 136 85Z" fill="url(#${ns}-face)" stroke="${shadow}" stroke-width=".4"/>
+    <path d="M142 66Q148 62 154 65M166 65Q173 62 179 66" stroke="${p.hair}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M142 72Q148 68 154 72Q148 76 142 72M166 72Q173 68 179 72Q173 76 166 72" fill="#f2e9df" stroke="${shadow}" stroke-width=".6"/><ellipse cx="148.5" cy="72" rx="1.7" ry="2.1" fill="#463b31"/><ellipse cx="172" cy="72" rx="1.7" ry="2.1" fill="#463b31"/>
+    <path d="M160 73 157 85Q160 87 164 85" fill="none" stroke="${shadow}" stroke-width=".8"/><path d="M151 94Q160 90 169 94Q160 101 151 94" fill="${shade(p.skin,-32)}"/><path d="M152 94Q160 96 168 94" stroke="${deep}" stroke-width=".5" fill="none"/>
+    <ellipse cx="145" cy="85" rx="6" ry="3" fill="#ca8c7c" opacity=".12"/><ellipse cx="175" cy="85" rx="6" ry="3" fill="#ca8c7c" opacity=".12"/>${hairFront}
+    ${guideLine('chest',174,chest)}${guideLine('waist',221,waist)}${guideLine('hips',hipY,hips)}${guideLine('shoulders',126,shoulder)}${guide==='height'?'<path d="M55 30V483M50 30H60M50 483H60" stroke="#a87945" stroke-width="1.5" fill="none"/>':''}${guide==='inseam'?`<path d="M160 ${crotch+12}V470" stroke="#a87945" stroke-dasharray="5 4" fill="none"/>`:''}</svg>`;
+  }
+  const api = { ranges, labels, tones, hairColors, hairStyles, example, cm, display, validate, fromForm, fromUS, usHeight, heightLabel, geometry, save, svg };
   root.FitCheckAvatar = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

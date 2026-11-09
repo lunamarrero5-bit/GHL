@@ -7,7 +7,8 @@ function editPiece(item) {
   editingId = item.id; photoVersion++; photoBusy=false;
   $('#item-form').reset(); $('#item-name').value=item.name; $('#item-color').value=item.color;
   $('#item-category').value=item.category; $('#item-occasion').value=item.occasion;
-  photoData=FitCheck.photoOK(item.image)?item.image:'';
+  photoData=canUseItem(item)?item.image:'';
+  if (!canUseItem(item)) { $('#item-name').value=''; $('#item-color').value=''; }
   $('#item-photo').required=!photoData;
   $('#photo-preview').hidden=!photoData; if(photoData) $('#photo-preview').src=photoData;
   $('#submit-item').disabled=false; $('#submit-item').textContent='Save changes';
@@ -20,7 +21,7 @@ function button(text, action, className='button secondary') {
 function displayDate(date) { return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'}).format(new Date(`${date}T12:00:00`)); }
 function wearOutfit(ids) {
   const pieces=ids.map(id=>state.items.find(i=>i.id===id));
-  if(!pieces.length || pieces.some(i=>!i || i.availability==='laundry')) return notify('Some pieces are missing or in the laundry. Update your closet before wearing this look.');
+  if(!pieces.length || pieces.some(i=>!i || !canUseItem(i) || i.availability==='laundry')) return notify('Some pieces are missing or in the laundry. Update your closet before wearing this look.');
   if(!confirm('Have you checked that every piece is clean, available and right for the conditions? Log this outfit as worn today?')) return;
   const today=FitCheck.day();
   if(pieces.every(i=>i.wears.includes(today))) return notify('This outfit is already logged for today.');
@@ -35,9 +36,9 @@ function renderSuggestions() {
     return;
   }
   const look=activeLooks[lookIndex]; const pieces=look.itemIds.map(id=>state.items.find(i=>i.id===id)).filter(Boolean);
-  if(pieces.length!==look.itemIds.length || pieces.some(i=>i.availability==='laundry')) { activeLooks=[]; suggestionMessage='Your closet changed. Find outfit ideas again to use the latest pieces.'; return renderSuggestions(); }
+  if(pieces.length!==look.itemIds.length || pieces.some(i=>!canUseItem(i)||i.availability==='laundry')) { activeLooks=[]; suggestionMessage='Your closet changed. Find outfit ideas again to use the latest pieces.'; return renderSuggestions(); }
   const card=element('article','look-card');
-  const top=element('div','look-heading'); top.append(element('span','eyebrow',`${look.occasion.toUpperCase()} / FROM YOUR CATALOG`),element('span','pill',`${lookIndex+1} of ${activeLooks.length}`));
+  const top=element('div','look-heading'); top.append(element('span','eyebrow',`${look.occasion.toUpperCase()} / FROM YOUR WARDROBE`),element('span','pill',`${lookIndex+1} of ${activeLooks.length}`));
   const preview=element('div','look-preview');
   pieces.forEach(i=>{ const tile=element('div','look-piece'); tile.append(itemImage(i),element('span','',i.name)); preview.append(tile); });
   const forgotten=pieces.find(i=>FitCheck.underused(i));
@@ -66,22 +67,24 @@ function renderSuggestions() {
 
 function renderExtras() {
   renderSuggestions();
+  const eligibleOutfits=state.outfits.filter(outfit=>outfit.itemIds.every(id=>canUseItem(state.items.find(item=>item.id===id))));
   const select=$('#plan-outfit');const previous=select.value;select.replaceChildren();
-  const placeholder=element('option','',state.outfits.length?'Choose an outfit':'Save an outfit first'); placeholder.value='';select.append(placeholder);
-  state.outfits.forEach(o=>{const option=element('option','',o.name);option.value=o.id;select.append(option);}); if(state.outfits.some(o=>o.id===previous)) select.value=previous;
-  const plans=state.plans.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const placeholder=element('option','',eligibleOutfits.length?'Choose an outfit':'Save an outfit first'); placeholder.value='';select.append(placeholder);
+  eligibleOutfits.forEach(o=>{const option=element('option','',o.name);option.value=o.id;select.append(option);}); if(eligibleOutfits.some(o=>o.id===previous)) select.value=previous;
+  const plans=state.plans.filter(plan=>eligibleOutfits.some(outfit=>outfit.id===plan.outfitId)).sort((a,b)=>a.date.localeCompare(b.date));
   $('#plans').replaceChildren(...(plans.length?plans.map(p=>{const outfit=state.outfits.find(o=>o.id===p.outfitId);const row=element('article','agenda-row');const info=element('div');info.append(element('span','eyebrow',displayDate(p.date)),element('h3','',outfit.name),element('p','field-hint',`${outfit.occasion} · ${outfit.itemIds.length} pieces`));const actions=element('div','agenda-actions');if(p.date<=FitCheck.day())actions.append(button('Wear today',()=>wearOutfit(outfit.itemIds)));actions.append(button('Cancel plan',()=>{if(commit({...state,plans:state.plans.filter(x=>x.id!==p.id)}))notify('Plan cancelled. Your outfit is still saved.');},'text-button'));row.append(info,actions);return row;}):[element('p','empty','Room for something good. Save an outfit, then choose a date above.')]));
-  const worn=state.items.filter(i=>i.wears.length).length;
-  const stats=[[state.items.length,'pieces in your closet'],[state.items.filter(i=>FitCheck.underused(i)).length,'not worn in 30 days'],[`${state.items.length?Math.round(worn/state.items.length*100):0}%`,'of pieces ever logged as worn'],[state.outfits.length,'saved combinations']];
+  const ownedItems=state.items.filter(canUseItem);
+  const worn=ownedItems.filter(i=>i.wears.length).length;
+  const stats=[[ownedItems.length,'pieces in your closet'],[ownedItems.filter(i=>FitCheck.underused(i)).length,'not worn in 30 days'],[`${ownedItems.length?Math.round(worn/ownedItems.length*100):0}%`,'of pieces ever logged as worn'],[eligibleOutfits.length,'saved combinations']];
   $('#wardrobe-stats').replaceChildren(...stats.map(([value,label])=>{const card=element('div','stat-card');card.append(element('strong','',String(value)),element('span','',label));return card;}));
-  const history=state.items.flatMap(i=>i.wears.map(date=>({item:i,date}))).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
-  $('#wear-history').replaceChildren(element('h3','','Recent wear history'),element('p','field-hint','Logged wears only. No wear history is invented for sample items.'),...(history.length?history.map(({item,date})=>{const row=element('div','history-row');row.append(element('span','',`${item.name} · ${displayDate(date)}`),button(`Undo wear: ${item.name}, ${date}`,()=>{if(commit({...state,items:state.items.map(i=>i.id===item.id?{...i,wears:i.wears.filter(d=>d!==date)}:i)})){renderSuggestions();notify('Wear log removed.');}},'text-button'));return row;}):[element('p','section-intro','Wear an outfit to start seeing your wardrobe story here.')]));
+  const history=ownedItems.flatMap(i=>i.wears.map(date=>({item:i,date}))).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+  $('#wear-history').replaceChildren(element('h3','','Recent wear history'),element('p','field-hint','Your own wardrobe and actual logged wears only.'),...(history.length?history.map(({item,date})=>{const row=element('div','history-row');row.append(element('span','',`${item.name} · ${displayDate(date)}`),button(`Undo wear: ${item.name}, ${date}`,()=>{if(commit({...state,items:state.items.map(i=>i.id===item.id?{...i,wears:i.wears.filter(d=>d!==date)}:i)})){renderSuggestions();notify('Wear log removed.');}},'text-button'));return row;}):[element('p','section-intro','Wear an outfit to start seeing your wardrobe story here.')]));
 }
 
 $('#style-form').addEventListener('submit',event=>{
   event.preventDefault();let weather=$('#style-weather').value;
   const temp=$('#style-temp').value;if(temp!==''){const c=$('#temp-unit').value==='F'?(Number(temp)-32)*5/9:Number(temp);if(c < -50 || c > 60)return notify('Please check the temperature and unit.');if(weather!=='rain')weather=c<16?'cold':c>27?'hot':'mild';}
-  const result=FitCheck.suggest(state.items,{occasion:$('#style-occasion').value,weather,rediscover:$('#favor-unworn').checked});activeLooks=result.looks;lookIndex=0;suggestionMessage=result.message;renderSuggestions();
+  const result=FitCheck.suggest(state.items.filter(canUseItem),{occasion:$('#style-occasion').value,weather,rediscover:$('#favor-unworn').checked,allowDemo:isDemoMode});activeLooks=result.looks;lookIndex=0;suggestionMessage=result.message;renderSuggestions();
 });
 $('#undo-change').addEventListener('click',()=>{if(undoState && commit(undoState)){selected.clear();activeLooks=[];suggestionMessage='Change undone. Find ideas again to use the current closet.';renderSuggestions();notify('Last change undone. Click Undo again to redo it. Available until you reload this page.');}});
 $('#temp-unit').addEventListener('change',()=>{const input=$('#style-temp');if(input.value!=='')input.value=Math.round($('#temp-unit').value==='C'?(Number(input.value)-32)*5/9:Number(input.value)*9/5+32);});
@@ -89,10 +92,10 @@ $('#closet-search').addEventListener('input',renderCloset);$('#unworn-filter').a
 $('#reset-filters').addEventListener('click',()=>{categoryFilter='All';$('#closet-search').value='';$('#unworn-filter').checked=false;$('#occasion-filter').value='All';document.querySelectorAll('[data-category]').forEach(b=>{b.classList.toggle('active',b.dataset.category==='All');b.setAttribute('aria-pressed',String(b.dataset.category==='All'));});renderCloset();});
 $('#plan-date').value=FitCheck.day();
 $('#plan-form').addEventListener('submit',event=>{event.preventDefault();const date=$('#plan-date').value;const outfitId=$('#plan-outfit').value;if(!FitCheck.dateOK(date)||date<FitCheck.day())return notify('Choose today or a future date.');if(!outfitId)return notify('Save and choose an outfit first.');if(state.plans.some(p=>p.date===date&&p.outfitId===outfitId))return notify('That outfit is already planned for this date.');if(commit({...state,plans:[...state.plans,{id:makeId(),date,outfitId}]}))notify('Outfit planned. Wear history will update only when you wear it.');});
-$('#export-backup').addEventListener('click',()=>{try {const data=recoveryMode?localStorage.getItem(STORAGE_KEY):JSON.stringify({...state,version:2},null,2);const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=element('a');a.href=url;a.download=`fitcheck-${recoveryMode?'recovery-':''}${FitCheck.day()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{notify('The browser prevented access to your saved data.');}});
+$('#export-backup').addEventListener('click',()=>{try {const data=recoveryMode?localStorage.getItem(STORAGE_KEY):JSON.stringify({...state,version:2},null,2);const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=element('a');a.href=url;a.download=`fitcheck-${isDemoMode?'demo-':''}${recoveryMode?'recovery-':''}${FitCheck.day()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{notify('The browser prevented access to your saved data.');}});
 $('#import-backup').addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;$('#backup-error').textContent='';
-  try{if(file.size>8*1024*1024)throw Error('Backup must be smaller than 8 MB.');const raw=JSON.parse(await file.text());const original=FitCheck.validate(raw);const restored=FitCheck.validate({...original,items:FitCheck.catalog.migrateIllustrated(original.items)});if(!confirm(`Replace this browser’s closet with ${restored.items.length} pieces, ${restored.outfits.length} outfits and ${restored.plans.length} plans? Download your current backup first if you need it.`))return;
+  try{if(file.size>8*1024*1024)throw Error('Backup must be smaller than 8 MB.');const restored=FitCheck.validate(JSON.parse(await file.text()));if(!isDemoMode&&restored.items.some(item=>item.origin==='demo'))throw Error('Switch to the demo wardrobe before restoring a demo backup.');if(!confirm(`Replace this browser’s closet with ${restored.items.length} pieces, ${restored.outfits.length} outfits and ${restored.plans.length} plans? Download your current backup first if you need it.`))return;
     // Write before changing in-memory state, so a full store cannot erase the current closet.
     localStorage.setItem(STORAGE_KEY,JSON.stringify(restored));undoState=state;$('#undo-change').hidden=recoveryMode;state=restored;recoveryMode=false;selected.clear();activeLooks=[];suggestionMessage='Your backup is restored. Find new ideas using your restored closet.';render();renderSuggestions();notify('Backup restored successfully.');
   }catch(error){$('#backup-error').textContent=error instanceof SyntaxError?'This file is not valid JSON. Your current closet is unchanged.':`${error.message} Your current closet is unchanged.`;}finally{event.target.value='';}

@@ -1,56 +1,55 @@
 # FitCheck
 
-**The personal wardrobe atelier.** An editorial wardrobe website with a personal avatar, photographic sample pieces, and occasion-based combinations from your own clothing catalog. Built with HTML, CSS, and JavaScript.
+**Your clothes. Your proportions. Your next look.** FitCheck helps people who own plenty of clothes but repeat the same outfits rediscover combinations in their existing wardrobe. This class project uses HTML, CSS and JavaScript.
 
-## Run
+## See it in action
 
-Serve this folder with any static web server, for example `python3 -m http.server 8000 --bind 127.0.0.1`, then visit `http://127.0.0.1:8000`. No account, API key or build step is required. Keep using the same hostname and port: browser storage belongs to that address. File URLs have browser-specific storage behavior; a local server is recommended.
+Open `index.html` in a modern browser, or serve this folder with `python3 -m http.server 8000 --bind 127.0.0.1` and visit `http://127.0.0.1:8000`. Use the same hostname and port to keep accessing the same browser storage.
 
-The starter wardrobe and featured collection use product photography hosted by REVOLVE. Existing photographic sample items from earlier versions remain supported. The optional video loads from YouTube only after Play is pressed. Those features need an internet connection. Uploaded photos, the avatar, written measuring instructions, and wardrobe tools work without those services. If a REVOLVE photo fails, the app tries another real product photograph. If neither loads, it shows a text message; it never substitutes a clothing icon. See ASSETS.md for sources and limitations.
+The first visit opens **Demo dressing room**, with a cherry tee, black trousers and white sneakers already on the model. Choose **Build a Look** to swap in a black dress or add an ivory blazer. The five original, unbranded demo images are photorealistic generated examples, not items offered for sale or clothes presumed to belong to a user. No retailer catalog, product links or shopping flow is included.
 
-## Features
+Choose **Use my own wardrobe** to manage actual owned clothing. Personal and demo wardrobes, outfits, plans and wear histories are stored separately. The avatar profile is shared, so the same personal proportions can be used to test the demo. Uploading a garment from demo mode first switches to the personal wardrobe.
 
-- **Personal avatar:** the opening dressing room shows an example avatar until you set up your own. Choose skin tone, hair style/color and optional first name; enter height, chest/bust, waist, hips, inseam and shoulder width in centimeters or inches; review and save. Your avatar appears immediately on future visits in the same browser. The preview responds to your proportions. It is a stylized 2D illustration, not a body scan, photorealistic likeness, clothing size recommendation or garment fit simulation. Clothing photos appear alongside the avatar rather than being warped onto it.
-- **Measurement guide:** six illustrated instructions, contextual field tips, and a click-to-load Crafty Gemini instructional video with a direct YouTube fallback. Invalid or missing measurements cannot be saved. Unit switching preserves the underlying centimeter values.
-- **The FitCheck Edit:** eight real REVOLVE reference products covering tops, bottoms, layers, dresses and shoes, with original product links. New visitors receive the photographic collection as their starter wardrobe. Existing illustrated starter pieces upgrade to reference photos while keeping their IDs, saved outfit references, wear logs and availability. User-uploaded photos are preserved. Unrecognized old custom illustrations show a request for a photo instead of rendering a clothing icon. Photos do not imply ownership or a purchase; upload your own clothes to personalize the catalog.
-- **Style me:** up to three catalog-based ideas for an occasion, conditions and optional temperature in Fahrenheit/Celsius, with reasons, swaps and optional layers. Incomplete inventories and unsupported formal dress codes show a gap instead of invented attire.
-- **My closet:** add/edit clothes, upload and resize required garment photos, search names/colors, filter by category/occasion/30-day recency, and track laundry availability. Starter clothes are examples; replace them with what you own.
-- **Outfit builder:** assemble, name and save any combination. Saved looks may be partial; automatic suggestions require a top and bottom (or dress) plus shoes.
-- **Saved outfits:** reuse looks, plan dates or log wear. Saving and planning never mark clothes worn.
-- **Planner:** assign saved outfits to dates in an agenda. Future plans cannot be logged as already worn.
-- **Insights & backup:** actual logged wear dates, usage statistics, JSON download/restore and wear-log corrections.
-- **Undo last change:** reverse the most recent successful mutation in the current page session. Click again to redo. Reloading clears undo; download backups before important edits.
+## Main features
 
-## Reliability and privacy
+- **Personal model:** choose skin tone, hair style/color and optional first name. Height uses feet and inches; chest/bust, waist and hips use inches. Inseam and shoulder width are optional and marked as estimated when left blank. A measurement tutorial and six illustrated instructions are available.
+- **Build a Look:** choose clothing photos and see them layered on the model. A new item replaces an existing item in the same category; a dress replaces top and bottoms. Layers and shoes can be added. Saved looks can be tried on again, and saving leaves the current look on the model.
+- **Adjust photo:** outline a garment by dragging numbered handles or moving them with arrow keys. Add/remove points, use the whole photo, and adjust position, width, length and rotation. Placement is saved with that garment and survives backups. Changing the garment photo or category clears the old placement.
+- **Owned wardrobe:** upload a JPG, PNG or WebP garment photo (up to 15 MB/50 megapixels), enter details, search/filter, edit/remove clothes and track laundry availability. Photos are resized to 600 px before browser storage.
+- **Style me:** rule-based ideas using the current workspace, occasion, entered conditions, optional temperature and logged wear. Incomplete inventories show a gap rather than invent clothes. Demo items are only eligible in demo mode.
+- **Saved looks, planner and insights:** save combinations, plan dates, log actual wear, correct logs, inspect usage and download/restore JSON backups. Saving and planning do not record wear. Undo is available for the most recent successful change until reload.
 
-State is validated before saving/importing. Failed writes preserve the previous in-memory state. Invalid stored data enters recovery mode and is retained for download rather than silently replaced. Backups reject duplicate IDs, broken outfit/plan references, invalid dates and unsupported image URLs. Restore requires confirmation and a successful write before replacing the screen. Photos are limited to 15 MB / 50 megapixels and resized to 600 px. Broken photos get an alternate product photo or a text-only unavailable message. New pieces require a JPG, PNG or WebP upload; editing a photographed piece keeps its photo unless replaced. Cross-tab changes refresh the current state.
+## What the visual preview does
 
-Clothes and uploaded photos stay in this browser's localStorage. The avatar, optional first name and measurements are saved separately under `fitcheck-avatar-v1`; wardrobe data continues to use `fitcheck-v1`. Edit, download or delete avatar data through **My avatar**. Deleting an avatar does not delete your wardrobe. The wardrobe backup and restore feature does not include or overwrite the separate avatar profile. The avatar download is a personal data export, not a wardrobe restore file.
+The local preview composites actual uploaded garment photos (or transparent demo PNGs) on a shaded, measurement-informed 2D body model. For user uploads, a front-facing flat-lay or a transparent cutout gives the cleanest result. The outline tool can exclude a person or background from a clothing photo. Adjustments are visual placements, not garment dimensions.
 
-Quotas, private browsing and clearing site data affect persistence. Backups contain wardrobe photos and data; keep them somewhere you control. External sample-image URLs are restricted to an exact catalog allowlist; arbitrary remote image URLs are still rejected. Clearing browser data removes the avatar and wardrobe. There are no accounts, cloud sync, server backups, live weather, AI chat, automatic photo segmentation, purchase imports or shopping integrations. Suggestions use transparent rules. Check garment availability, fabric warmth, waterproofing and your venue's dress code yourself.
+This is **not photorealistic AI virtual try-on**, a body scan, fabric/drape simulation or a clothing-size recommendation. The proportions are approximate. A dedicated rendering service/backend would be required for production-quality generated model photos and realistic garment fitting. No such service is connected, and no API keys are required for the current app.
 
-## Verification
+## Storage and privacy
 
-Run `node --test tests/*.test.js` with Node 18+. The 42 checks cover catalog ownership, completeness, recency, laundry, weather rules, formal gaps, backup integrity, migration, storage failure, recovery, undo, measurement validation, unit conversion, safe avatar rendering, photographic starter migration, preserving uploaded photos and exact photographic URL allowlisting.
+- `fitcheck-v1`: personal clothing, outfits, plans and wear history.
+- `fitcheck-demo-v1`: demo clothing, placements, outfits, plans and wear history.
+- `fitcheck-mode`: remembered demo/personal workspace selection.
+- `fitcheck-avatar-v1`: optional first name, appearance and measurements, stored canonically in centimeters but entered/displayed in US units.
 
-For avatar testing: open **Create my avatar**, personalize appearance, verify empty measurements are rejected, enter all six measurements, switch units, review, save and reload. Reopen to edit; close without saving; confirm the previous profile remains. Test downloading/deleting avatar data, playing/closing the guide, adding a photographic sample and saving an outfit. Test narrow screens and keyboard navigation in a real browser.
+Profile data and uploaded photos stay in this browser. There is no account, cloud sync, shopping integration, live weather or analytics upload. Demo PNGs load from the local `assets/demo` folder. The instructional video loads YouTube only after Play is pressed and is removed when the guide closes.
 
-Browser walkthrough: generate a chilly dinner look, save it, reload, plan a date, verify no wear history appeared, and undo the plan. Also check formal gaps, search/filter controls and editing. See PROCESS.md for research-derived outcomes, rubrics and a pilot test plan.
+Storage quotas/private browsing/clearing browser data can affect persistence. Save failures retain the previous state and report an error. Avatar data can be downloaded/deleted separately; wardrobe backups do not overwrite the avatar. Demo backups are labeled and cannot be restored into the personal workspace. Reset demo does not alter personal data or the avatar.
 
-## Source files
+Earlier retailer/illustrated examples are retained only for backup compatibility, marked unconfirmed and excluded from personal styling and previews. Their external image URLs are never fetched. Review them in My wardrobe to upload a photo of an actual owned piece or remove the earlier example. Existing uploaded photos, IDs, outfit references and wear dates are preserved.
 
-- index.html / style.css: forms, navigation and responsive design.
-- atelier.css: editorial branding, photographic collection, avatar studio and responsive setup.
-- catalog.js: fixed photographic example collection and allowed image URLs.
-- avatar-core.js: measurement validation, unit conversion, profile persistence and SVG avatar generation.
-- atelier.js: avatar setup, live preview, video guide and collection interactions.
-- core.js: pure recommendation, validation, date and recency rules.
-- script.js: closet, photos, saved outfits, storage and builder.
-- experience.js: styling, swaps, wear history, plans, insights, backups and editing.
-- tests/: regression checks using Node's built-in runner.
+## Files and checks
 
-This is a local-first class-project website ready for user testing. Public production use requires a separately designed backend, authentication, durable storage, monitoring and security/accessibility review. No software can be guaranteed bulletproof.
+- `index.html`, `style.css`, `atelier.css`: structure, forms, layout and visual design.
+- `script.js`, `experience.js`: wardrobe, outfits, storage, recommendations, planner and backups.
+- `core.js`: validation, ownership, dates and suggestion rules.
+- `avatar-core.js`, `atelier.js`: body model, US measurement setup and profile lifecycle.
+- `tryon-core.js`, `tryon.js`: garment selection, clipping, layering and placement editor.
+- `demo.js`, `assets/demo`: isolated demonstration wardrobe and original generated images.
+- `tests`: regression checks. Run `node --test tests/*.test.js` with Node 18+.
 
-## Publish updates
+The 59 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 48 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts.
 
-This repository contains a static site; publish the full folder, including every JavaScript and CSS file. Pushing a feature branch alone does not update a site hosted from `main`. If using GitHub Pages with a branch deployment, choose `main` and `/ (root)` in repository Settings → Pages, then push the completed changes to `main`. The repository does not currently include a hosting configuration, and deployment must be verified in the hosting service. A successful Git push is not by itself evidence that a public site has deployed.
+## Publishing
+
+Publish the full static folder, including every script and `assets/demo`. A feature-branch push does not update a site configured to deploy from `main`. If using GitHub Pages branch deployment, choose `main` and `/ (root)` in repository Settings → Pages. A successful Git push must still be followed by checking the deployment in the hosting service.

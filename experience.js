@@ -2,6 +2,17 @@ let editingId = null;
 let activeLooks = [];
 let lookIndex = 0;
 let suggestionMessage = '';
+let suggestedSaveDraft = null;
+
+function openSuggestedSave(look) {
+  // Snapshot the suggestion, without replacing the user's manual builder selection.
+  suggestedSaveDraft = { itemIds: [...look.itemIds], occasion: look.occasion, storageKey: STORAGE_KEY };
+  $('#suggested-outfit-name').value = `${look.occasion} look`;
+  $('#suggested-outfit-name').removeAttribute('aria-invalid');
+  $('#suggested-save-error').textContent = '';
+  $('#suggested-save-dialog').showModal();
+  $('#suggested-outfit-name').select();
+}
 
 function editPiece(item) {
   editingId = item.id; photoVersion++; photoBusy=false;
@@ -59,7 +70,7 @@ function renderSuggestions() {
     if(layers.length) { const label=element('label','','Add a layer (optional)');const select=element('select');select.setAttribute('aria-label','Add a layer');const placeholder=element('option','','No extra layer');placeholder.value='';select.append(placeholder);layers.forEach(i=>{const opt=element('option','',i.name);opt.value=i.id;select.append(opt);});select.addEventListener('change',()=>{if(select.value) {look.itemIds.push(select.value);renderSuggestions();}});label.append(select);swaps.append(label); }
   } else if(look.weather!=='cold' && pieces.some(i=>i.category==='Layers')) swaps.append(button('Remove extra layer',()=>{look.itemIds=look.itemIds.filter(id=>state.items.find(i=>i.id===id)?.category!=='Layers');renderSuggestions();},'text-button'));
   const actions=element('div','look-actions');
-  actions.append(button('Wear today ✓',()=>wearOutfit(look.itemIds),'button dark'),button('Name & save outfit ♡',()=>{selected=new Set(look.itemIds);$('#outfit-name').value=`${look.occasion} rotation`;$('#outfit-occasion').value=look.occasion;renderBuilder();showView('builder');}));
+  actions.append(button('Wear today ✓',()=>wearOutfit(look.itemIds),'button dark'),button('Save outfit ♡',()=>openSuggestedSave(look)));
   if(activeLooks.length>1) actions.append(button('See another option →',()=>{lookIndex=(lookIndex+1)%activeLooks.length;renderSuggestions();}));
   card.append(top,preview,desc,swaps,actions,element('p','field-hint','Save keeps a look for later. Wear today records wear history. Planning is available after saving.'));
   host.replaceChildren(card,element('p','field-hint',suggestionMessage));
@@ -124,6 +135,36 @@ $('#style-temp').addEventListener('input', () => {
   const input = $('#style-temp');
   temperatureInput.edit(input.value, $('#temp-unit').value, input.validity?.badInput);
 });
+$('#suggested-save-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const draft = suggestedSaveDraft;
+  if (!draft) return;
+  const name = $('#suggested-outfit-name').value.trim();
+  if (!name || name.length > 60) {
+    $('#suggested-save-error').textContent = 'Enter a look name using 1–60 characters.';
+    $('#suggested-outfit-name').setAttribute('aria-invalid', 'true');
+    $('#suggested-outfit-name').focus();
+    return;
+  }
+  const pieces = draft.itemIds.map(id => state.items.find(item => item.id === id));
+  if (draft.storageKey !== STORAGE_KEY || !pieces.length || pieces.some(item => !item || !canUseItem(item) || item.availability === 'laundry')) {
+    $('#suggested-save-error').textContent = 'Your wardrobe changed. Cancel and find a fresh outfit suggestion.';
+    return;
+  }
+  const outfit = { id: makeId(), name, occasion: draft.occasion, itemIds: [...draft.itemIds] };
+  if (!commit({ ...state, outfits: [outfit, ...state.outfits] })) {
+    $('#suggested-save-error').textContent = 'Could not save this look. Your saved outfits are unchanged. Try again or download a backup.';
+    return;
+  }
+  $('#suggested-save-dialog').close();
+  notify('Outfit saved. Find it in Saved outfits. No wear was recorded.');
+});
+$('#suggested-outfit-name').addEventListener('input', () => {
+  $('#suggested-outfit-name').removeAttribute('aria-invalid');
+  $('#suggested-save-error').textContent = '';
+});
+['#close-suggested-save', '#cancel-suggested-save'].forEach(selector => $(selector).addEventListener('click', () => $('#suggested-save-dialog').close()));
+$('#suggested-save-dialog').addEventListener('close', () => { suggestedSaveDraft = null; });
 $('#undo-change').addEventListener('click',()=>{if(undoState && commit(undoState)){selected.clear();activeLooks=[];suggestionMessage='Change undone. Find ideas again to use the current closet.';renderSuggestions();notify('Last change undone. Click Undo again to redo it. Available until you reload this page.');}});
 $('#temp-unit').addEventListener('change', () => {
   const input = $('#style-temp');

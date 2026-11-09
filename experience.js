@@ -7,9 +7,8 @@ function editPiece(item) {
   editingId = item.id; photoVersion++; photoBusy=false;
   $('#item-form').reset(); $('#item-name').value=item.name; $('#item-color').value=item.color;
   $('#item-category').value=item.category; $('#item-occasion').value=item.occasion;
-  photoData=item.image.startsWith('data:image/svg')?'':item.image;
-  let match; try { match = decodeURIComponent(item.image).match(/<g fill="(#[\da-f]{6})"/i); } catch { match = null; }
-  $('#item-shade').value=match ? match[1] : '#c94040';
+  photoData=FitCheck.photoOK(item.image)?item.image:'';
+  $('#item-photo').required=!photoData;
   $('#photo-preview').hidden=!photoData; if(photoData) $('#photo-preview').src=photoData;
   $('#submit-item').disabled=false; $('#submit-item').textContent='Save changes';
   $('#item-error').textContent=''; $('#dialog-title').textContent='Make it yours'; $('#item-dialog').showModal();
@@ -93,7 +92,7 @@ $('#plan-form').addEventListener('submit',event=>{event.preventDefault();const d
 $('#export-backup').addEventListener('click',()=>{try {const data=recoveryMode?localStorage.getItem(STORAGE_KEY):JSON.stringify({...state,version:2},null,2);const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=element('a');a.href=url;a.download=`fitcheck-${recoveryMode?'recovery-':''}${FitCheck.day()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{notify('The browser prevented access to your saved data.');}});
 $('#import-backup').addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;$('#backup-error').textContent='';
-  try{if(file.size>8*1024*1024)throw Error('Backup must be smaller than 8 MB.');const restored=FitCheck.validate(JSON.parse(await file.text()));if(!confirm(`Replace this browser’s closet with ${restored.items.length} pieces, ${restored.outfits.length} outfits and ${restored.plans.length} plans? Download your current backup first if you need it.`))return;
+  try{if(file.size>8*1024*1024)throw Error('Backup must be smaller than 8 MB.');const raw=JSON.parse(await file.text());const original=FitCheck.validate(raw);const restored=FitCheck.validate({...original,items:FitCheck.catalog.migrateIllustrated(original.items)});if(!confirm(`Replace this browser’s closet with ${restored.items.length} pieces, ${restored.outfits.length} outfits and ${restored.plans.length} plans? Download your current backup first if you need it.`))return;
     // Write before changing in-memory state, so a full store cannot erase the current closet.
     localStorage.setItem(STORAGE_KEY,JSON.stringify(restored));undoState=state;$('#undo-change').hidden=recoveryMode;state=restored;recoveryMode=false;selected.clear();activeLooks=[];suggestionMessage='Your backup is restored. Find new ideas using your restored closet.';render();renderSuggestions();notify('Backup restored successfully.');
   }catch(error){$('#backup-error').textContent=error instanceof SyntaxError?'This file is not valid JSON. Your current closet is unchanged.':`${error.message} Your current closet is unchanged.`;}finally{event.target.value='';}

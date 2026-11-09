@@ -2,7 +2,9 @@
 (function (root) {
   'use strict';
   const catalog = root.FitCheckCatalog || (typeof require === 'function' ? require('./catalog.js') : { pieces: [], images: [] });
-  const imageOK = image => typeof image === 'string' && image.length < 2000000 && (/^data:image\/(svg\+xml;charset=utf-8,|(?:jpeg|png|webp);base64,)/.test(image) || catalog.images.includes(image));
+  const photoOK = image => typeof image === 'string' && image.length < 2000000 && (/^data:image\/(?:jpeg|png|webp);base64,/.test(image) || catalog.images.includes(image));
+  // Accept old SVG data only for backward-compatible restore; it is never rendered as clothing.
+  const imageOK = image => photoOK(image) || (typeof image === 'string' && image.length < 2000000 && image.startsWith('data:image/svg+xml;charset=utf-8,'));
   const categories = ['Tops', 'Bottoms', 'Layers', 'Shoes', 'Dresses'];
   const occasions = ['Casual', 'Work', 'Going out'];
   const day = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -39,7 +41,7 @@
     }).sort((a,b)=>b.score-a.score).slice(0,3);
     return { looks:result, message: result.length === 1 ? 'One complete combination found. Add more pieces to unlock alternatives.' : `${result.length} combinations from your closet. Swap pieces to make them yours.` };
   }
-  const api = { validate, suggest, underused, lastWorn, day, dateOK, imageOK, catalog };
+  const api = { validate, suggest, underused, lastWorn, day, dateOK, imageOK, photoOK, catalog };
   if (typeof module !== 'undefined') module.exports = api;
   root.FitCheck = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

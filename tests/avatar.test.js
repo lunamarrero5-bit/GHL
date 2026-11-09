@@ -77,3 +77,21 @@ test('photographic catalog items survive wardrobe save and restore', () => {
   assert.deepEqual(F.validate(JSON.parse(JSON.stringify(state))), state);
   assert.equal(state.items[0].image, catalog.images[0]);
 });
+test('all current sample pieces have real photographic sources on REVOLVE', () => {
+  assert.equal(new Set(catalog.pieces.map(piece => piece.key)).size,catalog.pieces.length);
+  for (const piece of catalog.pieces) {
+    assert.ok(/^https:\/\/is[48]\.revolveassets\.com\/images\/p4\/n\/uv\/[\w-]+_V1\.jpg$/.test(piece.image));
+    assert.ok(piece.source.startsWith('https://www.revolve.com/'));
+    assert.ok(F.photoOK(piece.image));
+    assert.ok(F.photoOK(piece.alternate));
+    assert.equal(catalog.byImage(piece.alternate).key,piece.key);
+  }
+  for(const category of ['Tops','Bottoms','Layers','Dresses','Shoes']) assert.ok(catalog.pieces.some(piece=>piece.category===category));
+});
+test('legacy clothing SVGs are readable for recovery but never qualify as photographs', () => {
+  const old='data:image/svg+xml;charset=utf-8,%3Csvg%2F%3E';
+  assert.ok(F.imageOK(old));
+  assert.equal(F.photoOK(old),false);
+  const custom={id:'custom',name:'My original sketch',category:'Tops',color:'Red',image:old};
+  assert.equal(catalog.migrateIllustrated([custom])[0],custom);
+});

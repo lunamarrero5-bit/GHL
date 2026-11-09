@@ -5,30 +5,9 @@ const occasions = ['Casual', 'Work', 'Going out'];
 const $ = (selector) => document.querySelector(selector);
 const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-// Small original SVG illustrations keep the starter wardrobe available offline.
-function illustration(category, color = '#d0c3b7') {
-  const shapes = {
-    Tops: '<path d="M65 40 85 28Q100 43 115 28L135 40 175 75 150 105 130 88 135 175H65L70 88 50 105 25 75Z"/><path d="M85 28Q100 65 115 28" fill="none"/>',
-    Bottoms: '<path d="M55 25H145L153 195H113L100 85 87 195H47Z"/><path d="M55 45H145M100 25V85M60 45Q60 65 80 65M140 45Q140 65 120 65" fill="none"/>',
-    Layers: '<path d="M75 30 45 48 25 165 53 173 70 90 65 190H135L130 90 147 173 175 165 155 48 125 30Z"/><path d="M75 30 100 75 125 30M100 75V190M77 115H91M109 115H123" fill="none"/>',
-    Shoes: '<path d="M35 105 65 92 100 128 150 143Q179 149 177 169H30Q16 155 35 105Z"/><path d="M25 160H175M78 112 64 124M90 124 76 136M103 134 89 146" fill="none"/>',
-    Dresses: '<path d="M78 25 90 30Q100 45 110 30L122 25 135 65 116 85 158 190H42L84 85 65 65Z"/><path d="M84 85H116" fill="none"/>'
-  };
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220"><g fill="${color}" stroke="#635e58" stroke-width="1.5" stroke-linejoin="round">${shapes[category] || shapes.Tops}</g></svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
+// Every new sample is a photograph of a real garment.
 function starterWardrobe() {
-  return [
-    ['Everyday cotton tee', 'Tops', 'Red', 'Casual', '#c94040'],
-    ['Straight-leg denim', 'Bottoms', 'Black', 'Casual', '#252525'],
-    ['The oversized blazer', 'Layers', 'Sand', 'Work', '#c4af94'],
-    ['Weekend sneakers', 'Shoes', 'White', 'Casual', '#e6e2d6'],
-    ['Little black dress', 'Dresses', 'Black', 'Going out', '#45444b'],
-    ['Relaxed button-down', 'Tops', 'Sage', 'Work', '#a8b4a0'],
-    ['Tailored trousers', 'Bottoms', 'Charcoal', 'Work', '#77777b'],
-    ['Evening ballet flats', 'Shoes', 'Burgundy', 'Going out', '#8f5260']
-  ].map(([name, category, color, occasion, shade]) => ({ id: makeId(), name, category, color, occasion, image: illustration(category, shade) })).concat(FitCheck.catalog.pieces.slice(0, 4).map(({name, category, color, occasion, image}) => ({id: makeId(), name, category, color, occasion, image})));
+  return FitCheck.catalog.pieces.map(({ name, category, color, occasion, image }) => ({ id: makeId(), name, category, color, occasion, image }));
 }
 
 let storageWarning = '';
@@ -40,10 +19,8 @@ function loadState() {
     const data = JSON.parse(raw);
     const validItem = (item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.color === 'string' && categories.includes(item.category) && occasions.includes(item.occasion) && FitCheck.imageOK(item.image);
     if (!data || !Array.isArray(data.items) || !data.items.every(validItem) || !Array.isArray(data.outfits) || !data.outfits.every((outfit) => outfit && typeof outfit.id === 'string' && typeof outfit.name === 'string' && occasions.includes(outfit.occasion) && Array.isArray(outfit.itemIds) && outfit.itemIds.every((id) => data.items.some((item) => item.id === id)))) throw new Error('Invalid saved data');
-    // Update the original sample tee in closets saved before its color changed.
-    data.items = data.items.map((item) => item.name === 'Everyday cotton tee' && item.category === 'Tops' && item.color === 'Cream' && item.image === illustration('Tops', '#e4dfcf')
-      ? { ...item, color: 'Red', image: illustration('Tops', '#c94040') }
-      : item);
+    // Upgrade only recognized illustrated starter pieces; keep IDs, wear logs and user photos.
+    data.items = FitCheck.catalog.migrateIllustrated(data.items);
     return FitCheck.validate(data);
   } catch {
     recoveryMode = true;
@@ -99,10 +76,21 @@ function element(tag, className, text) {
   return node;
 }
 function itemImage(item) {
-  const img = element('img'); img.src = item.image; img.alt = item.name;
-  img.loading = 'lazy'; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
-  img.addEventListener('error', () => { img.src = illustration(item.category); }, { once: true });
-  return img;
+  const frame = element('span', 'garment-photo');
+  const message = element('span', 'photo-unavailable', 'Add a photo of this piece');
+  // Old custom illustrations can still be restored from a backup, but never displayed.
+  if (!FitCheck.photoOK(item.image)) { frame.append(message); return frame; }
+  const img = element('img');
+  img.alt = item.name; img.loading = 'lazy'; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
+  const reference = FitCheck.catalog.byImage(item.image);
+  let triedAlternate = item.image === reference?.alternate;
+  message.hidden = true;
+  img.addEventListener('error', () => {
+    if (reference && !triedAlternate) { triedAlternate = true; img.src = reference.alternate; return; }
+    img.hidden = true; message.hidden = false; message.textContent = 'Photo unavailable';
+  });
+  img.src = item.image;
+  frame.append(img, message); return frame;
 }
 function itemCard(item, selectable = false) {
   const card = element('article', 'clothing-card');
@@ -134,7 +122,15 @@ function itemCard(item, selectable = false) {
     remove.addEventListener('click', () => removeItem(item));
     meta.append(remove);
   }
-  info.append(meta); card.append(image, info); return card;
+  info.append(meta);
+  const reference = FitCheck.catalog.byImage(item.image);
+  if (reference) {
+    const source = element('a', 'product-source', `${reference.brand} / REVOLVE ↗`);
+    source.href = reference.source; source.target = '_blank'; source.rel = 'noopener noreferrer';
+    source.setAttribute('aria-label', `View the original ${reference.name} on REVOLVE`);
+    info.append(source);
+  }
+  card.append(image, info); return card;
 }
 
 function removeItem(item) {
@@ -222,19 +218,21 @@ $('#outfit-form').addEventListener('submit', (event) => {
 
 $('#add-item').addEventListener('click', () => {
   editingId = null; $('#dialog-title').textContent = 'A new addition'; $('#submit-item').textContent = 'Add to my closet';
-  $('#item-form').reset(); photoData = ''; photoVersion++; photoBusy = false;
+  $('#item-form').reset(); $('#item-photo').required = true; photoData = ''; photoVersion++; photoBusy = false;
   $('#submit-item').disabled = false; $('#item-error').textContent = ''; $('#photo-preview').hidden = true;
   $('#item-dialog').showModal();
 });
 $('#close-dialog').addEventListener('click', () => $('#item-dialog').close());
+$('#photo-preview').addEventListener('error', () => { $('#photo-preview').hidden = true; $('#item-error').textContent = 'Photo unavailable. Upload a replacement photo.'; });
 
 // Resize photos before saving: a few large phone photos can otherwise fill localStorage.
 $('#item-photo').addEventListener('change', async (event) => {
   const version = ++photoVersion;
+  const previousPhoto = photoData;
   photoData = ''; photoBusy = false; $('#submit-item').disabled = false;
   $('#photo-preview').hidden = true; $('#item-error').textContent = '';
   const file = event.target.files[0];
-  if (!file) { photoBusy = false; $('#submit-item').disabled = false; return; }
+  if (!file) { photoData = previousPhoto; $('#photo-preview').hidden = !photoData; if (photoData) $('#photo-preview').src = photoData; photoBusy = false; $('#submit-item').disabled = false; return; }
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 15 * 1024 * 1024) {
     $('#item-error').textContent = 'Choose a JPG, PNG, or WebP image smaller than 15 MB.'; event.target.value = ''; return;
   }
@@ -256,8 +254,9 @@ $('#item-form').addEventListener('submit', (event) => {
   event.preventDefault(); if (photoBusy) return;
   const name = $('#item-name').value.trim(); const color = $('#item-color').value.trim(); const category = $('#item-category').value;
   if (!name || !color) { $('#item-error').textContent = 'Please enter an item name and color.'; return; }
+  if (!photoData || !FitCheck.photoOK(photoData)) { $('#item-error').textContent = 'Upload a JPG, PNG, or WebP photo of this piece before saving.'; $('#item-photo').focus(); return; }
   const previous = state.items.find(i=>i.id===editingId);
-  const item = { ...previous, id: previous?.id || makeId(), name, color, category, occasion: $('#item-occasion').value, image: photoData || illustration(category, $('#item-shade').value) };
+  const item = { ...previous, id: previous?.id || makeId(), name, color, category, occasion: $('#item-occasion').value, image: photoData };
   if (commit({ ...state, items: previous ? state.items.map(i=>i.id===previous.id?item:i) : [...state.items, item] })) { $('#item-dialog').close(); activeLooks=[]; renderSuggestions(); notify(previous ? 'Piece updated.' : 'A new possibility, added to your closet.'); }
 });
 

@@ -65,7 +65,10 @@ function renderCollection() {
       }
     });
     photo.append(action);
-    card.append(photo, element('p', 'eyebrow', piece.edit), element('h3', '', piece.name), element('p', 'editorial-product-meta', `${piece.color} / ${piece.category}`));
+    const source = element('a', 'product-source', `${piece.brand} / REVOLVE ↗`);
+    source.href = piece.source; source.target = '_blank'; source.rel = 'noopener noreferrer';
+    source.setAttribute('aria-label', `View the original ${piece.name} on REVOLVE`);
+    card.append(photo, element('p', 'eyebrow', piece.edit), element('h3', '', piece.name), element('p', 'editorial-product-meta', `${piece.color} / ${piece.category}`), source);
     return card;
   }));
   $('#view-all-edit').textContent = allCollectionPieces ? 'SHOW THE HIGHLIGHTS ↑' : `VIEW ALL ${FitCheck.catalog.pieces.length} PIECES ↗`;

@@ -94,6 +94,15 @@ select, input { border-radius: 0; background: #faf9f6; border-color: #cfc8bc; fo
 .chip.active { background: #e4ddcf; color: #554733; }
 .piece-image { border-radius: 0; background: #eeebe4; }
 .piece-image img { mix-blend-mode: multiply; }
+.garment-photo { display: flex; align-items: center; justify-content: center; position: relative; min-width: 0; }
+.garment-photo > img { width: 100%; height: 100%; object-fit: contain; }
+.piece-image > .garment-photo, .editorial-product-image > .garment-photo { width: 100%; height: 100%; }
+.selected-row > .garment-photo { width: 44px; height: 48px; flex: 0 0 44px; }
+.saved-preview > .garment-photo { height: 110px; }
+.look-piece > .garment-photo { width: 100%; height: 130px; margin: 0; }
+.photo-unavailable { color: #756c5d; padding: 14px; font-size: 10px; line-height: 1.7; text-align: center; }
+.product-source { display: inline-block; font-size: 8px; color: #776449; line-height: 1.8; margin-top: 8px; text-decoration: underline; text-underline-offset: 3px; }
+.product-source:hover { color: #181818; }
 .piece-image .badge { border-radius: 0; font-size: 8px; letter-spacing: .6px; }
 .piece-info h3 { font-size: 12px; }
 .count { border-radius: 0; }

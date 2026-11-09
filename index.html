@@ -49,7 +49,7 @@
           <div class="stage-bottomline"><span id="avatar-caption">Make this silhouette yours.</span><button id="edit-avatar" class="text-button">PERSONALIZE ↗</button></div>
         </div>
         <div class="editorial-column">
-          <div class="editorial-image"><span class="editorial-number">THE EVENING EDIT / 001</span><img src="https://cdn.dummyjson.com/product-images/womens-dresses/black-women's-gown/1.webp" alt="Black evening gown from the sample collection" fetchpriority="high" referrerpolicy="no-referrer"><div class="editorial-image-fallback" hidden>THE BLACK<br><em>evening edit.</em></div></div>
+          <div class="editorial-image"><span class="editorial-number">THE EVENING EDIT / 001</span><img src="https://is8.revolveassets.com/images/p4/n/uv/SPDW-WD1742_V1.jpg" alt="superdown Skye mini dress in black, photographed for REVOLVE" fetchpriority="high" referrerpolicy="no-referrer"><div class="editorial-image-fallback" hidden>Photo unavailable</div></div>
           <p class="eyebrow">ALREADY IN YOUR ORBIT</p><h2>The art of<br><em>getting dressed.</em></h2><p>Less searching. More possibility.</p><button class="text-button" id="explore-edit">DISCOVER THE EDIT →</button>
         </div>
       </div>
@@ -58,7 +58,7 @@
         <div class="section-heading"><div><p class="eyebrow">THE FITCHECK EDIT</p><h2>Real pieces. <em>New possibilities.</em></h2></div><button class="text-button" id="view-all-edit">VIEW ALL 8 PIECES ↗</button></div>
         <p class="collection-note">A photographic sample collection to explore. Add a piece to try the experience, or upload the clothes you own.</p>
         <div class="editorial-grid" id="editorial-grid"></div>
-        <p class="asset-note">Sample imagery: DummyJSON & Fake Store API. Independent of REVOLVE; no purchases or brand affiliation.</p>
+        <p class="asset-note">Reference photography from REVOLVE. View the original product through each source link. These are sample pieces; FitCheck is independent of REVOLVE.</p>
       </div>
     </section>
 
@@ -169,11 +169,11 @@
     <div class="dialog-heading"><h2 id="dialog-title">A new addition</h2><button id="close-dialog" class="icon-button" aria-label="Close">×</button></div>
     <p>Add a piece you already own to your digital closet.</p>
     <form id="item-form">
-      <label for="item-photo" class="upload-label">Clothing photo <span>(optional)</span></label><input id="item-photo" type="file" accept="image/jpeg,image/png,image/webp"><img id="photo-preview" alt="Selected clothing photo" hidden>
+      <label for="item-photo" class="upload-label">Clothing photo <span>(required for a new piece)</span></label><input id="item-photo" type="file" accept="image/jpeg,image/png,image/webp" required><img id="photo-preview" alt="Selected clothing photo" hidden>
       <label for="item-name">Item name</label><input id="item-name" maxlength="60" placeholder="e.g. My favorite white tee" required>
       <div class="form-columns"><div><label for="item-category">Category</label><select id="item-category"><option>Tops</option><option>Bottoms</option><option>Layers</option><option>Shoes</option><option>Dresses</option></select></div><div><label for="item-color">Color</label><input id="item-color" maxlength="30" placeholder="e.g. Cream" required></div></div>
       <label for="item-occasion">Best for</label><select id="item-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select>
-      <label for="item-shade">Illustration color (if no photo)</label><input id="item-shade" type="color" value="#c94040">
+      <p class="field-hint">Upload a photo of the actual garment. When editing, your existing photo is kept unless you replace it.</p>
       <p class="form-error" id="item-error" role="alert"></p><button class="button dark full" id="submit-item" type="submit">Add to my closet</button>
     </form>
   </dialog>

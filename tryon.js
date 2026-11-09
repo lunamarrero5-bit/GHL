@@ -4,7 +4,7 @@ let fittingItemId=null, fittingDraft=null, selectedOutlinePoint=0, addingOutline
 
 function renderDressedAvatar(target,profile,ids,namespace,overrides={}) {
   const stage=element('div','model-canvas');
-  const body=element('div','model-body');body.innerHTML=FitCheckAvatar.svg(profile,'',namespace);
+  const body=element('div','model-body');body.innerHTML=FitCheckAvatar.svg(profile,'',namespace,{includeHair:false});
   stage.append(body);
   const pieces=Fitting.layers(ids.map(id=>state.items.find(item=>item.id===id)).filter(canUseItem));
   for(const item of pieces) {
@@ -19,6 +19,7 @@ function renderDressedAvatar(target,profile,ids,namespace,overrides={}) {
     image.addEventListener('error',()=>{layer.hidden=true;if(namespace==='builder')$('#tryon-status').textContent='A garment photo could not load. Replace that photo in My wardrobe.';});
     image.src=item.image;layer.append(image);stage.append(layer);
   }
+  const hair=element('div','model-hair');hair.innerHTML=FitCheckAvatar.hairSvg(profile,namespace+'-front');stage.append(hair);
   target.replaceChildren(stage);
   if(namespace==='builder')$('#tryon-status').textContent=pieces.length?`${pieces.length} of your pieces on your model. Adjust photo to refine the garment outline and placement.`:'Choose a piece from your own wardrobe to dress your model.';
 }

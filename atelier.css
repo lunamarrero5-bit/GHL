@@ -211,8 +211,9 @@ dialog::backdrop { background: #1c1712a6; backdrop-filter: blur(6px); }
 .height-fieldset legend { font-size: 10px; }
 .height-fieldset label { margin-top: 8px; }
 .model-canvas { height: 100%; aspect-ratio: 320 / 520; position: relative; flex-shrink: 0; }
-.model-body { position: absolute; inset: 0; }
-.model-body svg { display: block; width: 100%; height: 100%; }
+.model-body, .model-hair { position: absolute; inset: 0; }
+.model-body svg, .model-hair svg { display: block; width: 100%; height: 100%; }
+.model-hair { pointer-events: none; }
 .garment-overlay { position: absolute; overflow: hidden; pointer-events: none; transform-origin: center; }
 .garment-overlay img { position: absolute; max-width: none; object-fit: fill; padding: 0; margin: 0; }
 .avatar-canvas { overflow: hidden; }

@@ -26,7 +26,7 @@ function readAvatar() {
     avatarProfile = avatarRaw === null ? null : Avatar.validate(JSON.parse(avatarRaw));
   } catch {
     avatarProfile = null;
-    avatarReadError = 'Your avatar could not be loaded. Your wardrobe is safe. You can export or delete the existing avatar data in setup.';
+    avatarReadError = 'Your model could not be loaded. Your wardrobe is safe. You can export or delete the existing avatar data in setup.';
   }
 }
 
@@ -36,12 +36,12 @@ function renderAtelier() {
   const profile = avatarProfile || Avatar.example;
   renderDressedAvatar($('#home-avatar'), profile, [...selected], 'home');
   renderDressedAvatar($('#builder-avatar'), profile, [...selected], 'builder');
-  $('#avatar-status').textContent = avatarProfile ? 'YOUR PERSONAL AVATAR' : 'EXAMPLE AVATAR';
+  $('#avatar-status').textContent = avatarProfile ? 'YOUR PERSONAL MODEL' : 'GENERATED HUMAN REFERENCE';
   $('#avatar-caption').textContent = avatarProfile ? `${profile.name || 'Your'}${profile.name ? '’s' : ''} personal silhouette.` : 'Make this silhouette yours.';
   $('#avatar-height').textContent = avatarProfile ? `${Avatar.heightLabel(profile.height).toUpperCase()} / PERSONAL PROPORTIONS` : 'MADE TO YOUR MEASUREMENTS';
-  $('#create-avatar').textContent = avatarProfile ? 'EDIT MY AVATAR ↗' : 'CREATE MY AVATAR ↗';
+  $('#create-avatar').textContent = avatarProfile ? 'EDIT MY MODEL ↗' : 'PERSONALIZE MY MODEL ↗';
   $('#profile-initial').textContent = avatarProfile?.name ? Array.from(avatarProfile.name)[0].toUpperCase() : '◇';
-  $('#profile-button').setAttribute('aria-label', avatarProfile ? 'Edit your avatar and measurements' : 'Create your personal avatar');
+  $('#profile-button').setAttribute('aria-label', avatarProfile ? 'Edit your model and measurements' : 'Create your personal model');
 
 }
 
@@ -197,12 +197,12 @@ $('#avatar-form').addEventListener('submit', event => {
   }
   if (setupStep === 1) { setSetupStep(2); return; }
   try {
-    if (localStorage.getItem(AVATAR_KEY) !== setupStorageSnapshot) throw Error('Your avatar changed in another tab. Close setup and reopen it to see the latest version.');
+    if (localStorage.getItem(AVATAR_KEY) !== setupStorageSnapshot) throw Error('Your model changed in another tab. Close setup and reopen it to see the latest version.');
     const saved = Avatar.save(localStorage, profile);
     avatarProfile = saved; avatarRaw = JSON.stringify(saved); avatarReadError = '';
     renderAtelier(); $('#avatar-dialog').close();
-    notify(`${saved.name ? `${saved.name}, your` : 'Your'} personal avatar is ready. Welcome to your dressing room.`);
-  } catch (error) { $('#avatar-error').textContent = error.message.includes('another tab') ? error.message : 'Your avatar could not be saved. Browser storage may be full or disabled. Your previous avatar is unchanged.'; }
+    notify(`${saved.name ? `${saved.name}, your` : 'Your'} personal model is ready. Welcome to your dressing room.`);
+  } catch (error) { $('#avatar-error').textContent = error.message.includes('another tab') ? error.message : 'Your model could not be saved. Browser storage may be full or disabled. Your previous avatar is unchanged.'; }
 });
 
 ['#height-feet','#height-inches'].forEach(selector=>{
@@ -211,10 +211,10 @@ $('#avatar-form').addEventListener('submit', event => {
 });
 
 $('#delete-avatar').addEventListener('click', () => {
-  if (!confirm('Delete your avatar, name, and measurements from this browser? Your wardrobe and saved outfits will stay.')) return;
+  if (!confirm('Delete your model, name, and measurements from this browser? Your wardrobe and saved outfits will stay.')) return;
   try {
     localStorage.removeItem(AVATAR_KEY); avatarProfile = null; avatarRaw = null; avatarReadError = '';
-    renderAtelier(); $('#avatar-dialog').close(); notify('Your avatar and measurements have been deleted.');
+    renderAtelier(); $('#avatar-dialog').close(); notify('Your model and measurements have been deleted.');
   } catch { $('#avatar-error').textContent = 'The browser prevented deletion. Your saved avatar is unchanged.'; }
 });
 $('#export-avatar').addEventListener('click', () => {
@@ -235,12 +235,12 @@ $('#load-video').addEventListener('click', () => {
 });
 $('#measurement-guide-grid').replaceChildren(...Object.keys(Avatar.ranges).map((key, index) => {
   const tile = element('article', 'measurement-guide-card'); const figure = element('div', 'guide-figure');
-  figure.innerHTML = Avatar.svg(Avatar.example, key, 'guide-'+key);
+  figure.innerHTML = Avatar.diagram(Avatar.example, key, 'guide-'+key);
   tile.append(figure, element('h3', '', `${String(index + 1).padStart(2, '0')} / ${Avatar.labels[key]}`), element('p', '', measurementTips[key])); return tile;
 }));
 window.addEventListener('storage', event => {
   if (event.key === AVATAR_KEY || event.key === null) {
     readAvatar(); renderAtelier();
-    if ($('#avatar-dialog').open) $('#avatar-error').textContent = 'Your avatar changed in another tab. Close and reopen setup before saving.';
+    if ($('#avatar-dialog').open) $('#avatar-error').textContent = 'Your model changed in another tab. Close and reopen setup before saving.';
   }
 });

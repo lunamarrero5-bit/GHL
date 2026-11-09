@@ -1,6 +1,7 @@
 /* Measurement validation and a deterministic, stylized 2D avatar. No scan or sizing claims. */
 (function (root) {
   'use strict';
+  const human=root.FitCheckHuman || (typeof require==='function'?require('./human-model.js'):null);
   const ranges = { height: [100, 240], chest: [45, 220], waist: [40, 220], hips: [45, 240], inseam: [30, 130], shoulders: [20, 80] };
   const labels = { height: 'Height', chest: 'Chest / bust', waist: 'Waist', hips: 'Hips', inseam: 'Inseam', shoulders: 'Shoulder width' };
   const tones = ['#f0d3bd', '#deb595', '#c59170', '#aa7455', '#80513e', '#50352d'];
@@ -77,7 +78,7 @@
   function shade(hex, amount) {
     return '#' + [1,3,5].map(index => clamp(parseInt(hex.slice(index,index+2),16)+amount,0,255).toString(16).padStart(2,'0')).join('');
   }
-  function svg(input = example, guide = '', namespace = 'default') {
+  function diagram(input = example, guide = '', namespace = 'default') {
     const p = validate(input), {chest,waist,hips,shoulder,crotch} = geometry(p);
     const hipY = crotch-28;
     const ns = 'fc-' + String(namespace).replace(/[^a-z0-9-]/gi,'').slice(0,40);
@@ -112,7 +113,34 @@
     <ellipse cx="145" cy="85" rx="6" ry="3" fill="#ca8c7c" opacity=".12"/><ellipse cx="175" cy="85" rx="6" ry="3" fill="#ca8c7c" opacity=".12"/>${hairFront}
     ${guideLine('chest',174,chest)}${guideLine('waist',221,waist)}${guideLine('hips',hipY,hips)}${guideLine('shoulders',126,shoulder)}${guide==='height'?'<path d="M55 30V483M50 30H60M50 483H60" stroke="#a87945" stroke-width="1.5" fill="none"/>':''}${guide==='inseam'?`<path d="M160 ${crotch+12}V470" stroke="#a87945" stroke-dasharray="5 4" fill="none"/>`:''}</svg>`;
   }
-  const api = { ranges, labels, tones, hairColors, hairStyles, example, cm, display, validate, fromForm, fromUS, usHeight, heightLabel, geometry, save, svg };
+  function hairParts(p,ns) {
+    const hair=human.hairFor(p.hairstyle);if(!hair)return {defs:'',markup:''};
+    const [x,y,w,h]=hair.box,[left,top,right,bottom]=hair.bounds,sx=right-left,sy=bottom-top;
+    const rgb=[1,3,5].map(i=>parseInt(p.hair.slice(i,i+2),16)/255);
+    const matrix=rgb.map(channel=>`${.2126*channel*3} ${.7152*channel*3} ${.0722*channel*3} 0 ${channel*.2}`).join(' ')+' 0 0 0 1 0';
+    const defs=`<clipPath id="${ns}-hair-window"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath><filter id="${ns}-hair-color" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${matrix}"/></filter>`;
+    const markup=`<g clip-path="url(#${ns}-hair-window)"><image href="${hair.file}" x="${x-left/sx*w}" y="${y-top/sy*h}" width="${w/sx}" height="${h/sy}" preserveAspectRatio="none"${p.hair===hairColors[0]?'':` filter="url(#${ns}-hair-color)"`}/></g>`;
+    return {defs,markup};
+  }
+  const safeNamespace=value=>'fc-'+String(value).replace(/[^a-z0-9-]/gi,'').slice(0,40);
+  function hairSvg(input=example,namespace='hair') {
+    const p=validate(input),parts=hairParts(p,safeNamespace(namespace));
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 520" aria-hidden="true"><defs>${parts.defs}</defs>${parts.markup}</svg>`;
+  }
+  // The visible model uses photographic human imagery; measurements warp the reference gently.
+  // Facial detail remains unchanged when a body circumference changes.
+  function svg(input = example, guide = '', namespace = 'default', options = {}) {
+    const p=validate(input),g=geometry(p),ns=safeNamespace(namespace);
+    const source=human.bodyFor(p.skin),rows=human.strips(g),frame=human.frameFor(p.skin);
+    const photoScale=453/((frame[3]-frame[1])*520),photoOffset=30-frame[1]*520*photoScale;
+    const clips=rows.map((row,index)=>`<clipPath id="${ns}-body-${index}"><rect x="0" y="${row.top}" width="320" height="${row.height}"/></clipPath>`).join('');
+    const body=rows.map((row,index)=>`<g clip-path="url(#${ns}-body-${index})"><image href="${source}" x="${160-160*row.scaleX}" y="${row.top+(photoOffset-row.sourceTop)*row.scaleY}" width="${320*row.scaleX}" height="${520*photoScale*row.scaleY}" preserveAspectRatio="none"/></g>`).join('');
+    const hair=options.includeHair===false?{defs:'',markup:''}:hairParts(p,ns);
+    const line=(key,y,width)=>guide===key?`<path d="M${160-width-15} ${y}H${160+width+15}" fill="none" stroke="#a87945" stroke-width="1.5" stroke-dasharray="5 4"/>`:'';
+    const guides=line('chest',174,g.chest)+line('waist',221,g.waist)+line('hips',g.crotch-28,g.hips)+line('shoulders',126,g.shoulder)+(guide==='height'?'<path d="M55 30V483M50 30H60M50 483H60" stroke="#a87945" stroke-width="1.5" fill="none"/>':'')+(guide==='inseam'?`<path d="M160 ${g.crotch+12}V470" stroke="#a87945" stroke-dasharray="5 4" fill="none"/>`:'');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 520" role="img" aria-label="Photographic human styling reference with personalized proportions"><defs>${clips}${hair.defs}</defs>${body}${hair.markup}${guides}</svg>`;
+  }
+  const api = { ranges, labels, tones, hairColors, hairStyles, example, cm, display, validate, fromForm, fromUS, usHeight, heightLabel, geometry, save, svg, hairSvg, diagram };
   root.FitCheckAvatar = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

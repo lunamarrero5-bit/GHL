@@ -48,3 +48,11 @@ These are not achieved results. No analytics are uploaded. Use a consented obser
 2. Re-run regression checks after data-model or recommendation changes.
 3. Validate whether live weather, conversational input or bulk capture improves the measured outcomes before integrating services.
 4. Before public production use, add authenticated durable storage, operational monitoring, security review and broader accessibility/device testing.
+
+## Atelier and avatar update
+
+The new opening experience adds a personal-avatar setup, a photographic sample edit, and editorial branding informed by REVOLVE's storefront. Existing wardrobe IDs, wear logs, plans and backups remain in their existing storage model. The separate avatar profile contains the optional first name, appearance choices and six measurements in canonical centimeters; changing the display unit does not alter the underlying saved measurements.
+
+Avatar validation, exact photographic URL allowlisting and wardrobe round trips extend the existing regression checks to 37. In the implementation environment, Node and a working browser launch were unavailable. These synchronous tests were executed with macOS JavaScriptCore using a temporary Node test/assert/vm compatibility runner: 37 passed. A separate DOM harness using the actual HTML and scripts checked 25 interaction outcomes: setup progression, empty-field rejection, live preview, unit switching, profile persistence, cancel/retry/stale-tab behavior, guide loading and closing, collection expansion and adding, photo upload and outfit saving. Both harnesses used simulated browser APIs and do not verify rendering, network imagery, actual video playback, real storage quotas, or screen-reader behavior.
+
+Before accepting the visual redesign, open the site in a real browser on desktop and mobile. Confirm product photos load; compare the initial and saved-avatar views; complete setup by keyboard; test the centimeter/inch toggle; play and close the video; and create an outfit with an uploaded clothing photo. The avatar is expressly a stylized proportion preview rather than a 3D fit or facial-likeness system.

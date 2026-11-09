@@ -1,6 +1,8 @@
 /* Pure wardrobe rules shared by the website and regression tests. */
 (function (root) {
   'use strict';
+  const catalog = root.FitCheckCatalog || (typeof require === 'function' ? require('./catalog.js') : { pieces: [], images: [] });
+  const imageOK = image => typeof image === 'string' && image.length < 2000000 && (/^data:image\/(svg\+xml;charset=utf-8,|(?:jpeg|png|webp);base64,)/.test(image) || catalog.images.includes(image));
   const categories = ['Tops', 'Bottoms', 'Layers', 'Shoes', 'Dresses'];
   const occasions = ['Casual', 'Work', 'Going out'];
   const day = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -9,7 +11,7 @@
   const unique = (xs) => new Set(xs).size === xs.length;
   function validate(data) {
     if (!data || !Array.isArray(data.items) || !Array.isArray(data.outfits) || data.items.length > 1000 || data.outfits.length > 1000) throw Error('This is not a supported FitCheck backup.');
-    if (!data.items.every(i => i && textOK(i.id, 100) && textOK(i.name, 60) && textOK(i.color, 30) && categories.includes(i.category) && occasions.includes(i.occasion) && typeof i.image === 'string' && i.image.length < 2000000 && /^data:image\/(svg\+xml;charset=utf-8,|(?:jpeg|png|webp);base64,)/.test(i.image) && (i.availability === undefined || ['unknown','ready','laundry'].includes(i.availability)) && (i.wears === undefined || (Array.isArray(i.wears) && i.wears.length <= 10000 && i.wears.every(d => dateOK(d) && d <= day()) && unique(i.wears))))) throw Error('A clothing item has invalid data.');
+    if (!data.items.every(i => i && textOK(i.id, 100) && textOK(i.name, 60) && textOK(i.color, 30) && categories.includes(i.category) && occasions.includes(i.occasion) && imageOK(i.image) && (i.availability === undefined || ['unknown','ready','laundry'].includes(i.availability)) && (i.wears === undefined || (Array.isArray(i.wears) && i.wears.length <= 10000 && i.wears.every(d => dateOK(d) && d <= day()) && unique(i.wears))))) throw Error('A clothing item has invalid data.');
     if (!unique(data.items.map(i => i.id))) throw Error('Duplicate clothing IDs in backup.');
     const ids = new Set(data.items.map(i => i.id));
     if (!data.outfits.every(o => o && textOK(o.id,100) && textOK(o.name,60) && occasions.includes(o.occasion) && Array.isArray(o.itemIds) && o.itemIds.length > 0 && unique(o.itemIds) && o.itemIds.every(id => ids.has(id)))) throw Error('An outfit contains invalid or missing pieces.');
@@ -37,7 +39,7 @@
     }).sort((a,b)=>b.score-a.score).slice(0,3);
     return { looks:result, message: result.length === 1 ? 'One complete combination found. Add more pieces to unlock alternatives.' : `${result.length} combinations from your closet. Swap pieces to make them yours.` };
   }
-  const api = { validate, suggest, underused, lastWorn, day, dateOK };
+  const api = { validate, suggest, underused, lastWorn, day, dateOK, imageOK, catalog };
   if (typeof module !== 'undefined') module.exports = api;
   root.FitCheck = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

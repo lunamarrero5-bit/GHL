@@ -28,7 +28,7 @@ function starterWardrobe() {
     ['Relaxed button-down', 'Tops', 'Sage', 'Work', '#a8b4a0'],
     ['Tailored trousers', 'Bottoms', 'Charcoal', 'Work', '#77777b'],
     ['Evening ballet flats', 'Shoes', 'Burgundy', 'Going out', '#8f5260']
-  ].map(([name, category, color, occasion, shade]) => ({ id: makeId(), name, category, color, occasion, image: illustration(category, shade) }));
+  ].map(([name, category, color, occasion, shade]) => ({ id: makeId(), name, category, color, occasion, image: illustration(category, shade) })).concat(FitCheck.catalog.pieces.slice(0, 4).map(({name, category, color, occasion, image}) => ({id: makeId(), name, category, color, occasion, image})));
 }
 
 let storageWarning = '';
@@ -38,7 +38,7 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw === null) return FitCheck.validate({ items: starterWardrobe(), outfits: [] });
     const data = JSON.parse(raw);
-    const validItem = (item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.color === 'string' && categories.includes(item.category) && occasions.includes(item.occasion) && typeof item.image === 'string' && /^data:image\/(svg\+xml|jpeg|png|webp)[;,]/.test(item.image);
+    const validItem = (item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.color === 'string' && categories.includes(item.category) && occasions.includes(item.occasion) && FitCheck.imageOK(item.image);
     if (!data || !Array.isArray(data.items) || !data.items.every(validItem) || !Array.isArray(data.outfits) || !data.outfits.every((outfit) => outfit && typeof outfit.id === 'string' && typeof outfit.name === 'string' && occasions.includes(outfit.occasion) && Array.isArray(outfit.itemIds) && outfit.itemIds.every((id) => data.items.some((item) => item.id === id)))) throw new Error('Invalid saved data');
     // Update the original sample tee in closets saved before its color changed.
     data.items = data.items.map((item) => item.name === 'Everyday cotton tee' && item.category === 'Tops' && item.color === 'Cream' && item.image === illustration('Tops', '#e4dfcf')
@@ -100,6 +100,7 @@ function element(tag, className, text) {
 }
 function itemImage(item) {
   const img = element('img'); img.src = item.image; img.alt = item.name;
+  img.loading = 'lazy'; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
   img.addEventListener('error', () => { img.src = illustration(item.category); }, { once: true });
   return img;
 }
@@ -176,6 +177,7 @@ function renderBuilder() {
     row.append(itemImage(item), element('span', '', item.name), remove); return row;
   });
   $('#selected-items').replaceChildren(...(rows.length ? rows : [element('p', 'selection-hint', 'Your look is a blank canvas. Select a piece to get started.')]));
+  if (typeof renderAtelier === 'function') renderAtelier();
 }
 
 function renderSaved() {

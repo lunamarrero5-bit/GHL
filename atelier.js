@@ -32,6 +32,8 @@ function renderAtelier() {
   // The wardrobe can render before this script is loaded.
   if (!$('#home-avatar')) return;
   const profile = avatarProfile || Avatar.example;
+  $('#welcome-name').hidden = !avatarProfile?.name;
+  $('#welcome-model-name').textContent = avatarProfile?.name || '';
   renderDressedAvatar($('#home-avatar'), profile, [...selected], 'home');
   renderDressedAvatar($('#builder-avatar'), profile, [...selected], 'builder');
   $('#avatar-status').textContent = `${FitCheckHuman.presetFor(profile).label.toUpperCase()} / FIXED POSE`;

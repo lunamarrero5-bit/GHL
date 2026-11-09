@@ -21,6 +21,8 @@ function loadState() {
     const data = JSON.parse(raw);
     const validItem = (item) => item && typeof item.id === 'string' && typeof item.name === 'string' && typeof item.color === 'string' && categories.includes(item.category) && occasions.includes(item.occasion) && FitCheck.imageOK(item.image);
     if (!data || !Array.isArray(data.items) || !data.items.every(validItem) || !Array.isArray(data.outfits) || !data.outfits.every((outfit) => outfit && typeof outfit.id === 'string' && typeof outfit.name === 'string' && occasions.includes(outfit.occasion) && Array.isArray(outfit.itemIds) && outfit.itemIds.every((id) => data.items.some((item) => item.id === id)))) throw new Error('Invalid saved data');
+    const legacy = typeof FitCheckLegacyDemo !== 'undefined' ? FitCheckLegacyDemo : (typeof require==='function' ? require('./legacy-demo.js') : null);
+    if(legacy)data.items=legacy.migrate(data.items);
     return FitCheck.validate(data);
   } catch {
     recoveryMode = true;

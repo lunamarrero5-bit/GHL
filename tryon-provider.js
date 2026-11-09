@@ -30,6 +30,20 @@
   function createMockProvider({compose=composeMock}={}) {
     return {name:'Local mock',isMock:true,renderOutfit:input=>compose(input)};
   }
-  const api={createMockProvider}; root.FitCheckProvider=api;
+  function createStudioProvider({fallback=createMockProvider()}={}) {
+    return {name:'Local sample library and mock',isMock:true,async renderOutfit(input) {
+      const model=root.FitCheckModel.loadModels().find(model=>model.image===input.modelImage);
+      if(model?.photoPreset) {
+        const originals=root.FitCheckDemo.wardrobe();
+        const garments=input.garments.map(image=>originals.find(item=>item.image===image));
+        if(garments.every(Boolean)) {
+          const sample=root.FitCheckPhotoStudio.lookup({shape:model.photoPreset},garments,{allowDemo:true});
+          if(sample)return sample.src;
+        }
+      }
+      return fallback.renderOutfit(input);
+    }};
+  }
+  const api={createMockProvider,createStudioProvider}; root.FitCheckProvider=api;
   if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -5,6 +5,7 @@ try { isDemoMode=localStorage.getItem('fitcheck-mode')!=='own'; } catch { /* Dem
 let STORAGE_KEY=isDemoMode?DEMO_STORAGE_KEY:OWN_STORAGE_KEY;
 function canUseItem(item) { return FitCheck.isOwned(item) || (isDemoMode && item?.origin==='demo' && FitCheck.demoPhotoOK(item.image)); }
 const categories = ['Tops', 'Bottoms', 'Layers', 'Shoes', 'Dresses'];
+let builderCategory = 'All';
 const occasions = ['Casual', 'Work', 'Going out'];
 const $ = (selector) => document.querySelector(selector);
 const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -135,6 +136,12 @@ function itemCard(item, selectable = false) {
     meta.append(remove);
   }
   info.append(meta);
+  const source=FitCheckDemo.sources[item.id];
+  if(item.origin==='demo'&&source){
+    const link=element('a','text-button','Revolve example ↗');link.href=source.url;link.target='_blank';link.rel='noopener noreferrer';
+    link.setAttribute('aria-label',`View ${item.name} at Revolve`);info.append(link);
+    if(source.edited)info.append(element('p','field-hint','Edited item-only reference'));
+  }
   card.append(image, info); return card;
 }
 
@@ -154,12 +161,13 @@ function renderCloset() {
   const pending = state.items.length - owned.length;
   $('#ownership-notice').hidden = pending === 0;
   $('#ownership-notice').textContent = `${pending} earlier example pieces are excluded from styling. Review them below to replace their photos with your own garments, or remove them.`;
-  const items = state.items.filter((item) => (canUseItem(item) || $('#review-examples').checked) && (categoryFilter === 'All' || item.category === categoryFilter) && (occasion === 'All' || item.occasion === occasion) && (!$('#unworn-filter').checked || FitCheck.underused(item)) && `${item.name} ${item.color}`.toLowerCase().includes(query));
+  const items = state.items.filter((item) => (canUseItem(item) || $('#review-examples').checked) && (categoryFilter === 'All' || item.category === categoryFilter) && (occasion === 'All' || item.occasion === occasion) && (!$('#unworn-filter').checked || FitCheck.underused(item)) && `${item.name} ${item.color} ${FitCheckDemo.sources[item.id]?'Revolve':''}`.toLowerCase().includes(query));
   $('#closet-grid').replaceChildren(...items.map((item) => itemCard(item)));
   $('#closet-count').textContent = owned.length;
+  $('#closet-eyebrow').textContent=isDemoMode?'STYLE EXAMPLES TO EXPLORE':'CLOTHES YOU ALREADY OWN';
   $('[data-view="closet"]').textContent=isDemoMode?'Demo wardrobe':'My wardrobe';
   $('#wardrobe-mode-label').textContent=isDemoMode?'DEMO DRESSING ROOM':'MY PERSONAL WARDROBE';
-  $('#wardrobe-mode-caption').textContent=isDemoMode?'Generated sample garments to try FitCheck. Your own clothes stay separate.':'Your uploaded clothes only. Try the demo whenever you want.';
+  $('#wardrobe-mode-caption').textContent=isDemoMode?'Sample garments and Revolve references. Your own clothes stay separate.':'Your uploaded clothes only. Try the demo whenever you want.';
   $('#switch-wardrobe-mode').textContent=isDemoMode?'Use my own wardrobe ↗':'Try the demo ↗';
   $('#reset-demo').hidden=!isDemoMode;
   $('#today-view .demo-note').textContent=isDemoMode?'Try the sample garments here. Uploading a real piece switches to your separate personal wardrobe.':'Start with the clothes you already own. Upload garment photos in My wardrobe, then combine them in Build a Look.';
@@ -181,8 +189,10 @@ function renderBuilder() {
   const picked=[...selected].filter(id => available.some(item=>item.id===id));
   let compatible=[];for(const id of picked)compatible=FitCheckTryOn.choose(compatible,available.find(item=>item.id===id),available);
   selected = new Set(compatible);
-  $('#builder-grid').replaceChildren(...available.map((item) => itemCard(item, true)));
-  $('#builder-empty').hidden = available.length > 0;
+  const visible = available.filter(item => builderCategory === 'All' || item.category === builderCategory);
+  $('#builder-grid').replaceChildren(...visible.map((item) => itemCard(item, true)));
+  $('#builder-empty').hidden = visible.length > 0;
+  $('#builder-empty').textContent = available.length ? 'No pieces in this category. Choose another category.' : 'Your closet is empty. Add a piece in My closet to get started.';
   const items = state.items.filter((item) => selected.has(item.id));
   $('#selection-count').textContent = items.length;
   const rows = items.map((item) => {
@@ -220,6 +230,12 @@ function render() { renderCloset(); renderBuilder(); renderSaved(); if (typeof r
 document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
 $('#review-examples').addEventListener('change', renderCloset);
 $('#switch-wardrobe-mode').addEventListener('click',()=>switchWardrobeMode(!isDemoMode));
+$('#add-revolve-examples').addEventListener('click',()=>{
+  if(!isDemoMode)switchWardrobeMode(true);
+  const items=FitCheckDemo.addExamples(state.items);
+  if(items.length===state.items.length){showView('closet');notify('All nine Revolve examples are already in the demo wardrobe.');return;}
+  if(commit({...state,items})){showView('closet');notify('Revolve examples added to the demo wardrobe.');}
+});
 $('#reset-demo').addEventListener('click',()=>{
   if(!isDemoMode)return;
   try {const fresh=FitCheck.validate({items:FitCheckDemo.wardrobe(),outfits:[]});localStorage.setItem(DEMO_STORAGE_KEY,JSON.stringify(fresh));state=fresh;recoveryMode=false;undoState=null;$('#undo-change').hidden=true;selected=new Set(FitCheckDemo.initialSelection);activeLooks=[];suggestionMessage='Demo refreshed. Choose an occasion to try the sample wardrobe.';$('#suggestions').replaceChildren();render();notify('Demo reset. Your personal wardrobe is unchanged.');}
@@ -290,3 +306,9 @@ $('#item-form').addEventListener('submit', (event) => {
 
 render();
 if (storageWarning) notify(storageWarning);
+
+document.querySelectorAll('[data-builder-category]').forEach(button => button.addEventListener('click', () => {
+  builderCategory = button.dataset.builderCategory;
+  document.querySelectorAll('[data-builder-category]').forEach(chip => { const active = chip === button; chip.classList.toggle('active', active); chip.setAttribute('aria-pressed', String(active)); });
+  renderBuilder();
+}));

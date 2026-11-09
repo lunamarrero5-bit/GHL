@@ -27,7 +27,7 @@
       const preferences = validatePreferences(model);
       if (model.heightClass !== preferences.heightClass) throw Error('Model height class does not match its height.');
       ids.add(model.id);
-      return {...preferences,id:model.id,image:model.image};
+      return {...preferences,id:model.id,image:model.image,...(['balanced','straight','curve'].includes(model.photoPreset)?{photoPreset:model.photoPreset}:{})};
     });
   }
   function pickModel(preferences, entries = catalog) {
@@ -41,7 +41,21 @@
   function validateSelection(value) {
     // Keep syntactically valid IDs when a library entry is retired; UI rematches preferences.
     if (!value || typeof value.modelId !== 'string' || !/^[a-z0-9-]{1,100}$/.test(value.modelId)) throw Error('The saved model choice is invalid.');
-    return {modelId:value.modelId,preferences:validatePreferences(value.preferences)};
+    const result={modelId:value.modelId,preferences:validatePreferences(value.preferences)};
+    if(value.name!==undefined) {
+      if(typeof value.name!=='string' || value.name.length>40)throw Error('Use a name of at most 40 characters.');
+      result.name=value.name.trim();
+    }
+    if(value.measurements!==undefined) {
+      const notes={};
+      for(const key of ['chest','waist','hips']) {
+        const number=value.measurements?.[key];
+        if(typeof number!=='number' || !Number.isFinite(number) || number<20 || number>80)throw Error('Enter all three optional measurement notes between 20 and 80 inches.');
+        notes[key]=number;
+      }
+      result.measurements=notes;
+    }
+    return result;
   }
   function resolveSelection(selection, entries = catalog) {
     const saved = selection ? validateSelection(selection) : null;

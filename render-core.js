@@ -37,7 +37,7 @@
             Promise.resolve().then(()=>provider.renderOutfit({modelImage,garments:sorted.map(g=>g.image)})),
             new Promise((_,reject)=>{ timer=setTimeout(()=>reject(Error('Rendering timed out. Please retry.')),timeoutMs); })
           ]);
-          if (typeof imageUrl !== 'string' || !/^(https:\/\/|data:image\/(png|jpeg|webp);base64,|blob:)/.test(imageUrl)) throw Error('The provider returned an unsupported image.');
+          if (typeof imageUrl !== 'string' || !/^(https:\/\/|data:image\/(png|jpeg|webp);base64,|blob:|assets\/studio\/photos\/(balanced|straight|curve)-(casual|casual-layer|dress|dress-layer)\.png$)/.test(imageUrl)) throw Error('The provider returned an unsupported image.');
           cache.delete(key); cache.set(key,{signature,imageUrl});
           if (cache.size>20) cache.delete(cache.keys().next().value);
           return imageUrl;

@@ -24,7 +24,7 @@ test('loader supports a one-entry, extended and empty library without a fixed mo
   assert.throws(()=>M.loadModels([models[0],models[0]]),/invalid/);
 });
 test('all placeholder images share one canvas, framing and fitted base layer',()=>{
-  for(const model of M.loadModels()) {
+  for(const model of M.loadModels().filter(model=>!model.photoPreset)) {
     const svg=fs.readFileSync(require.resolve('../'+model.image),'utf8');
     assert.match(svg,/width="320" height="520" viewBox="0 0 320 520"/);
     assert.match(svg,/MODEL LIBRARY/);
@@ -57,4 +57,22 @@ test('retired model IDs rematch preferences rather than invalidating saved outfi
   const selection={modelId:'retired-model',preferences:M.defaults};
   assert.equal(M.resolveSelection(selection).id,M.pickModel(M.defaults).id);
   assert.equal(F.validate({items:[],outfits:[],modelPreference:selection}).modelPreference.modelId,'retired-model');
+});
+
+test('Luna photographic presets retain their canvas and integrate in the variable-size library',()=>{
+  const photos=M.loadModels().filter(model=>model.photoPreset);
+  assert.equal(photos.length,3);
+  for(const model of photos) {
+    const data=fs.readFileSync(require.resolve('../'+model.image));
+    assert.equal(data.readUInt32BE(16),984);assert.equal(data.readUInt32BE(20),1599);
+    assert.equal(M.resolveSelection({modelId:model.id,preferences:M.defaults}).photoPreset,model.photoPreset);
+  }
+});
+test('personalized welcome name and optional notes persist without changing saved outfits',()=>{
+  const selection={modelId:'studio-balanced',preferences:M.defaults,name:'  Luna  ',measurements:{chest:34,waist:28,hips:38}};
+  const saved=F.validate({items:[],outfits:[],modelPreference:selection});
+  const reloaded=F.validate(JSON.parse(JSON.stringify(saved)));
+  assert.equal(reloaded.modelPreference.name,'Luna');
+  assert.deepEqual(reloaded.modelPreference.measurements,selection.measurements);
+  assert.throws(()=>M.validateSelection({...selection,measurements:{waist:28}}),/all three/);
 });

@@ -37,7 +37,7 @@ test('a failed render exposes retry and leaves the real UI collage intact',async
   const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{children:[],events:{},replaceChildren(...children){this.children=children;},append(...children){this.children.push(...children);},setAttribute(){},addEventListener(name,callback){this.events[name]=callback;}});return nodes.get(selector);};
   let fail=true;
   const context=vm.createContext({$:node,element:()=>node(Symbol()),itemImage:item=>({image:item.image}),FitCheckRender:R,FitCheckModel:require('../model-core.js'),
-    FitCheckProvider:{createMockProvider:()=>({async renderOutfit(){if(fail)throw Error('Provider unavailable');return output;}})},
+    FitCheckProvider:{createStudioProvider:()=>({async renderOutfit(){if(fail)throw Error('Provider unavailable');return output;}})},
     localStorage:memory(),navigator:{},state:{items:request.garments},selected:new Set(['a','b']),STORAGE_KEY:'own',canUseItem:()=>true,mountModelImage(){}
   });
   vm.runInContext(fs.readFileSync(require.resolve('../tryon.js'),'utf8'),context);
@@ -64,4 +64,17 @@ test('timeouts and malformed provider output become retryable failures',async()=
 test('a blocked budget write prevents calling the provider',async()=>{
   let calls=0;const renderer=R.createRenderer({storage:{getItem:()=>null,setItem(){throw Error('Storage blocked');}},provider:{renderOutfit(){calls++;return output;}}});
   await assert.rejects(renderer.render(request),/blocked/);assert.equal(calls,0);
+});
+
+test('Luna photographic provider uses exact sample combinations and mocks other garments',async()=>{
+  const context=vm.createContext({FitCheckModel:require('../model-core.js'),FitCheckDemo:require('../demo.js'),FitCheckPhotoStudio:require('../photo-studio.js')});
+  vm.runInContext(fs.readFileSync(require.resolve('../tryon-provider.js'),'utf8'),context);
+  let mocked=0;const provider=context.FitCheckProvider.createStudioProvider({fallback:{async renderOutfit(){mocked++;return output;}}});
+  const demo=context.FitCheckDemo.wardrobe();
+  for(const shape of ['balanced','straight','curve']) {
+    const image=await provider.renderOutfit({modelImage:`assets/models/studio-${shape}.png`,garments:demo.filter(g=>['demo-top','demo-pants','demo-shoes'].includes(g.id)).map(g=>g.image)});
+    assert.equal(image,`assets/studio/photos/${shape}-casual.png`);
+  }
+  await provider.renderOutfit({modelImage:'assets/models/studio-balanced.png',garments:['data:image/png;base64,own']});
+  assert.equal(mocked,1);
 });

@@ -1,5 +1,5 @@
 /* Instant garment collage and explicit, replaceable try-on render step. */
-const tryOnProvider = FitCheckProvider.createMockProvider();
+const tryOnProvider = FitCheckProvider.createStudioProvider();
 const outfitRenderer = FitCheckRender.createRenderer({
   provider:tryOnProvider, storage:localStorage, limit:5,
   reserveLock:fn=>navigator.locks ? navigator.locks.request('fitcheck-render-budget',fn) : fn()
@@ -19,7 +19,7 @@ function updateRenderControls() {
   $('#render-outfit').textContent=loading?'Creating preview…':'See it on my model';
   $('#render-outfit').setAttribute('aria-busy',String(loading));
   $('#retry-render').hidden=previewState.status!=='error';
-  $('#tryon-status').textContent=loading?'Creating your preview. Your collage stays available.':previewState.status==='error'?previewState.message:previewState.status==='ready'?'Mock preview ready. Garments are shown beside the model; no fitted try-on was generated.':'Choose your pieces for an instant collage, then request a model preview.';
+  $('#tryon-status').textContent=loading?'Creating your preview. Your collage stays available.':previewState.status==='error'?previewState.message:previewState.status==='ready'?(renderedOutfitImage.startsWith('assets/studio/photos/')?'Prepared demo photograph. This sample look is not a live try-on or fit prediction.':'Mock preview ready. Garments are shown beside the model; no fitted try-on was generated.'):'Choose your pieces for an instant collage, then request a model preview.';
   try { $('#render-allowance').textContent=`${outfitRenderer.remaining()} of 5 render attempts left today on this browser. Cached previews use no attempts.`; }
   catch { $('#render-allowance').textContent='Render allowance is unavailable. Your collage remains usable.'; }
 }

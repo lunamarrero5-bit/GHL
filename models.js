@@ -720,6 +720,39 @@
     "hairColor": "black",
     "heightCm": 168,
     "image": "assets/models/full-rich-deep-none.svg"
+  },
+  {
+    "id": "studio-balanced",
+    "heightClass": "average",
+    "build": "regular",
+    "skinTone": "medium",
+    "hairStyle": "long",
+    "hairColor": "brown",
+    "heightCm": 168,
+    "image": "assets/models/studio-balanced.png",
+    "photoPreset": "balanced"
+  },
+  {
+    "id": "studio-straight",
+    "heightClass": "average",
+    "build": "slim",
+    "skinTone": "medium",
+    "hairStyle": "long",
+    "hairColor": "brown",
+    "heightCm": 168,
+    "image": "assets/models/studio-straight.png",
+    "photoPreset": "straight"
+  },
+  {
+    "id": "studio-curve",
+    "heightClass": "average",
+    "build": "full",
+    "skinTone": "medium",
+    "hairStyle": "long",
+    "hairColor": "brown",
+    "heightCm": 168,
+    "image": "assets/models/studio-curve.png",
+    "photoPreset": "curve"
   }
 ];
   root.FitCheckModels = models;

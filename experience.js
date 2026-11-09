@@ -92,10 +92,48 @@ function renderExtras() {
   $('#wear-history').replaceChildren(element('h3','','Recent wear history'),element('p','field-hint','Your own wardrobe and actual logged wears only.'),...(history.length?history.map(({item,date})=>{const row=element('div','history-row');row.append(element('span','',`${item.name} · ${displayDate(date)}`),button(`Undo wear: ${item.name}, ${date}`,()=>{if(commit({...state,items:state.items.map(i=>i.id===item.id?{...i,wears:i.wears.filter(d=>d!==date)}:i)})){renderSuggestions();notify('Wear log removed.');}},'text-button'));return row;}):[element('p','section-intro','Wear an outfit to start seeing your wardrobe story here.')]));
 }
 
-$('#style-form').addEventListener('submit',event=>{
-  event.preventDefault();let weather=$('#style-weather').value;
-  const temp=$('#style-temp').value;if(temp!==''){const c=$('#temp-unit').value==='F'?(Number(temp)-32)*5/9:Number(temp);if(c < -50 || c > 60)return notify('Please check the temperature and unit.');if(weather!=='rain')weather=c<16?'cold':c>27?'hot':'mild';}
-  const result=FitCheck.suggest(state.items.filter(canUseItem),{occasion:$('#style-occasion').value,weather,rediscover:$('#favor-unworn').checked,allowDemo:isDemoMode});activeLooks=result.looks;lookIndex=0;suggestionMessage=result.message;renderSuggestions();
+const temperatureInput = FitCheckTemperature.createInput($('#temp-unit').value);
+function clearTemperatureFeedback() {
+  $('#temperature-error').textContent = '';
+  $('#style-temp').removeAttribute('aria-invalid');
+  $('#temperature-conflict').hidden = true;
+  $('#temperature-note').textContent = '';
+}
+function clearStyleIdeas() {
+  activeLooks = []; lookIndex = 0; suggestionMessage = '';
+  $('#suggestions').replaceChildren();
+}
+function findStyleIdeas(choice = '') {
+  clearTemperatureFeedback();
+  clearStyleIdeas();
+  const input = $('#style-temp');
+  const check = temperatureInput.evaluate(input.value, $('#temp-unit').value, $('#style-weather').value, input.validity?.badInput);
+  if (check.error) {
+    $('#temperature-error').textContent = check.error;
+    input.setAttribute('aria-invalid', 'true'); input.focus();
+    return;
+  }
+  if (check.conflict && !choice) {
+    $('#temperature-note').textContent = check.conflict;
+    $('#switch-temperature-conditions').textContent = `Switch to ${FitCheckTemperature.labels[check.suggested]}`;
+    $('#temperature-conflict').hidden = false;
+    return;
+  }
+  const weather = choice === 'switch' && check.conflict ? check.suggested : check.weather;
+  if (choice === 'switch') $('#style-weather').value = weather;
+  const result = FitCheck.suggest(state.items.filter(canUseItem), {occasion:$('#style-occasion').value, weather, rediscover:$('#favor-unworn').checked, allowDemo:isDemoMode});
+  activeLooks = result.looks; lookIndex = 0; suggestionMessage = result.message;
+  renderSuggestions();
+}
+$('#style-form').addEventListener('submit', event => { event.preventDefault(); findStyleIdeas(); });
+$('#switch-temperature-conditions').addEventListener('click', () => findStyleIdeas('switch'));
+$('#keep-temperature-conditions').addEventListener('click', () => findStyleIdeas('keep'));
+['#style-temp', '#style-weather', '#style-occasion', '#favor-unworn'].forEach(selector => {
+  $(selector).addEventListener(selector === '#style-temp' ? 'input' : 'change', () => { clearTemperatureFeedback(); clearStyleIdeas(); });
+});
+$('#style-temp').addEventListener('input', () => {
+  const input = $('#style-temp');
+  temperatureInput.edit(input.value, $('#temp-unit').value, input.validity?.badInput);
 });
 $('#suggested-save-form').addEventListener('submit', event => {
   event.preventDefault();
@@ -128,7 +166,12 @@ $('#suggested-outfit-name').addEventListener('input', () => {
 ['#close-suggested-save', '#cancel-suggested-save'].forEach(selector => $(selector).addEventListener('click', () => $('#suggested-save-dialog').close()));
 $('#suggested-save-dialog').addEventListener('close', () => { suggestedSaveDraft = null; });
 $('#undo-change').addEventListener('click',()=>{if(undoState && commit(undoState)){selected.clear();activeLooks=[];suggestionMessage='Change undone. Find ideas again to use the current closet.';renderSuggestions();notify('Last change undone. Click Undo again to redo it. Available until you reload this page.');}});
-$('#temp-unit').addEventListener('change',()=>{const input=$('#style-temp');if(input.value!=='')input.value=Math.round($('#temp-unit').value==='C'?(Number(input.value)-32)*5/9:Number(input.value)*9/5+32);});
+$('#temp-unit').addEventListener('change', () => {
+  const input = $('#style-temp');
+  const converted = temperatureInput.convert(input.value, $('#temp-unit').value, input.validity?.badInput);
+  if (input.value !== converted) input.value = converted;
+  clearTemperatureFeedback(); clearStyleIdeas();
+});
 $('#closet-search').addEventListener('input',renderCloset);$('#unworn-filter').addEventListener('change',renderCloset);
 $('#reset-filters').addEventListener('click',()=>{categoryFilter='All';$('#closet-search').value='';$('#unworn-filter').checked=false;$('#occasion-filter').value='All';document.querySelectorAll('[data-category]').forEach(b=>{b.classList.toggle('active',b.dataset.category==='All');b.setAttribute('aria-pressed',String(b.dataset.category==='All'));});renderCloset();});
 $('#plan-date').value=FitCheck.day();

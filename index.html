@@ -14,7 +14,8 @@
   <script src="demo.js" defer></script>
   <script src="core.js" defer></script>
   <script src="script.js" defer></script>
-  <script src="experience.js?v=direct-save" defer></script>
+  <script src="temperature.js?v=temperature-precision" defer></script>
+  <script src="experience.js?v=temperature-precision" defer></script>
   <script src="tryon.js" defer></script>
   <script src="atelier.js" defer></script>
 </head>
@@ -61,11 +62,17 @@
       <p class="section-intro">A few thoughtful combinations, with a reason for every piece. You make the final call.</p>
       <p class="demo-note">Start with the clothes you already own. Upload your garment photos in My wardrobe, then combine them in Build a Look.</p>
       <div class="styling-layout">
-        <form id="style-form" class="context-panel">
+        <form id="style-form" class="context-panel" novalidate>
           <label for="style-occasion">01 / The occasion</label><select id="style-occasion"><option value="Casual">Everyday & weekend</option><option value="Work">Office & client meetings</option><option value="Going out">Dinner & going out</option><option value="Formal">Black tie & formal</option></select>
           <label for="style-weather">02 / Conditions at your event</label><select id="style-weather"><option value="mild">Mild / indoors</option><option value="cold">Chilly / needs a layer</option><option value="hot">Hot / keep it light</option><option value="rain">Rain / check footwear</option></select>
-          <p class="field-hint">Set conditions yourself. This is not a live forecast.</p>
-          <div class="form-columns"><div><label for="style-temp">Temperature (optional)</label><input id="style-temp" type="number" min="-60" max="140" placeholder="e.g. 60"></div><div><label for="temp-unit">Unit</label><select id="temp-unit"><option value="F">°F</option><option value="C">°C</option></select></div></div>
+          <p class="field-hint">Set conditions yourself. This is not a live forecast. Rain checks footwear; for cold rain, choose Chilly to require a layer and check rain protection yourself.</p>
+          <div class="form-columns"><div><label for="style-temp">Temperature (optional)</label><input id="style-temp" type="number" step="any" placeholder="e.g. 60" aria-describedby="temperature-error temperature-note"></div><div><label for="temp-unit">Unit</label><select id="temp-unit"><option value="F">°F</option><option value="C">°C</option></select></div></div>
+          <p id="temperature-error" class="form-error" role="alert"></p>
+          <div id="temperature-conflict" hidden>
+            <p id="temperature-note" class="field-hint" role="status"></p>
+            <button type="button" id="switch-temperature-conditions" class="button secondary">Switch conditions</button>
+            <button type="button" id="keep-temperature-conditions" class="button secondary">Continue anyway</button>
+          </div>
           <label class="check-label"><input type="checkbox" id="favor-unworn" checked> Bring underused pieces back into rotation</label>
           <button class="button dark full" type="submit">Find outfit ideas ↗</button>
           <p class="field-hint">Uses your wardrobe, occasion and logged wear history.</p>

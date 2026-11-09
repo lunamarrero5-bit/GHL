@@ -21,7 +21,7 @@ function illustration(category, color = '#d0c3b7') {
 function starterWardrobe() {
   return [
     ['Everyday cotton tee', 'Tops', 'Red', 'Casual', '#c94040'],
-    ['Straight-leg denim', 'Bottoms', 'Blue', 'Casual', '#66809b'],
+    ['Straight-leg denim', 'Bottoms', 'Black', 'Casual', '#252525'],
     ['The oversized blazer', 'Layers', 'Sand', 'Work', '#c4af94'],
     ['Weekend sneakers', 'Shoes', 'White', 'Casual', '#e6e2d6'],
     ['Little black dress', 'Dresses', 'Black', 'Going out', '#45444b'],

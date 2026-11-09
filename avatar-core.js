@@ -137,7 +137,7 @@
     const body=rows.map((row,index)=>`<g clip-path="url(#${ns}-body-${index})"><image href="${source}" x="${160-160*row.scaleX}" y="${row.top+(photoOffset-row.sourceTop)*row.scaleY}" width="${320*row.scaleX}" height="${520*photoScale*row.scaleY}" preserveAspectRatio="none"/></g>`).join('');
     const hair=options.includeHair===false?{defs:'',markup:''}:hairParts(p,ns);
     const line=(key,y,width)=>guide===key?`<path d="M${160-width-15} ${y}H${160+width+15}" fill="none" stroke="#a87945" stroke-width="1.5" stroke-dasharray="5 4"/>`:'';
-    const guides=line('chest',174,g.chest)+line('waist',221,g.waist)+line('hips',g.crotch-28,g.hips)+line('shoulders',126,g.shoulder)+(guide==='height'?'<path d="M55 30V483M50 30H60M50 483H60" stroke="#a87945" stroke-width="1.5" fill="none"/>':'')+(guide==='inseam'?`<path d="M160 ${g.crotch+12}V470" stroke="#a87945" stroke-dasharray="5 4" fill="none"/>`:'');
+    const guides=line('chest',156,g.chest)+line('waist',190,g.waist)+line('hips',250,g.hips)+line('shoulders',126,g.shoulder)+(guide==='height'?'<path d="M55 30V483M50 30H60M50 483H60" stroke="#a87945" stroke-width="1.5" fill="none"/>':'')+(guide==='inseam'?`<path d="M160 ${g.crotch+12}V470" stroke="#a87945" stroke-dasharray="5 4" fill="none"/>`:'');
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 520" role="img" aria-label="Photographic human styling reference with personalized proportions"><defs>${clips}${hair.defs}</defs>${body}${hair.markup}${guides}</svg>`;
   }
   const api = { ranges, labels, tones, hairColors, hairStyles, example, cm, display, validate, fromForm, fromUS, usHeight, heightLabel, geometry, save, svg, hairSvg, diagram };

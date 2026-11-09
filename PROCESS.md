@@ -13,17 +13,17 @@ FitCheck's main purpose is to style clothing a user already owns, on a model inf
 
 ## Scope and limitations
 
-The avatar has shaded skin, facial features, hair and measurement-informed anatomy. Real garment photos are composited on that model. This is a local photo-placement preview, not generative photorealistic try-on, a body reconstruction or a size/fit prediction. A production rendering engine would be a separate integration; it is not present or simulated by a success screen.
+The visible model now uses generated photographic human references with natural facial/skin/hand detail and separate photographic hair. Image-space body proportions respond approximately to measurements while the face remains unchanged. Measurement-guide figures remain diagrams. Real garment photos are composited on that model. This is a local photo-placement preview, not generative photorealistic try-on, a body reconstruction or a size/fit prediction. A production rendering engine would be a separate integration; it is not present or simulated by a success screen.
 
 A front-facing garment cutout gives the best preview. The demo images are original, generated photographic cutouts with measured alpha bounds. Real uploads can be outlined manually. No garment illustrations or retailer-image fallbacks are used.
 
 ## Verification performed
 
-The environment has macOS JavaScriptCore but no usable Node runtime or browser launch. A temporary compatibility runner executed the actual synchronous Node-style regression files: **59 passed**. Tests cover ownership, demo opt-in, suggestion completeness, weather/laundry/recency rules, storage/recovery, US measurements, avatar validation, safe rendering, selection conflicts, outline validation, stale-photo rejection and placement backup round trips.
+The environment has macOS JavaScriptCore but no usable Node runtime or browser launch. A temporary compatibility runner executed the actual synchronous Node-style regression files: **63 passed**. Tests cover ownership, demo opt-in, suggestion completeness, weather/laundry/recency rules, storage/recovery, US measurements, avatar validation, safe rendering, selection conflicts, outline validation, stale-photo rejection and placement backup round trips.
 
-A separate temporary DOM harness loaded the actual HTML and browser scripts with simulated browser APIs: **48 interaction checks passed**. These included setup/review/save, optional estimates, retaining old metric values, photo uploads, live garment layers, layer ordering, replacement of conflicting pieces, saving/canceling placements, saved-look reuse, retailer-example quarantine, guide lifecycle, dressed-demo startup, demo reset, and exact preservation of personal data while editing the demo.
+A separate temporary DOM harness loaded the actual HTML and browser scripts with simulated browser APIs: **50 interaction checks passed**. These included setup/review/save, optional estimates, retaining old metric values, photo uploads, live garment layers, layer ordering, replacement of conflicting pieces, saving/canceling placements, saved-look reuse, retailer-example quarantine, guide lifecycle, dressed-demo startup, demo reset, and exact preservation of personal data while editing the demo.
 
-All five PNGs were visually inspected. Their dimensions and alpha-channel transparency were checked, and their normalized opaque bounds were used only as placement metadata. HTML labels/IDs/script targets, referenced files and Git whitespace checks were also checked.
+All five garment PNGs and all nine human/hair PNGs were visually inspected. Their dimensions and alpha-channel transparency were checked, and their normalized opaque bounds were used only as placement metadata. HTML labels/IDs/script targets, referenced files and Git whitespace checks were also checked.
 
 The harness does not verify actual CSS rendering, native pointer capture, touch behavior, browser storage quotas, video playback or screen-reader operation. Before accepting the visual design, open in a desktop and mobile browser, choose different skin tones/body measurements, add the blazer, swap to a dress, drag outline points with pointer and keyboard, save/reload, switch workspaces and verify personal data is unchanged.
 
@@ -37,3 +37,10 @@ The harness does not verify actual CSS rendering, native pointer capture, touch 
 - Do Save, Plan and Wear today communicate distinct actions?
 
 No pilot results or production engagement claims are asserted. Before public production use, evaluate a fitting/rendering service separately and design authentication, durable storage, consent and deployment protections appropriate to that integration.
+
+
+## Human appearance refinement
+
+The displayed model no longer draws the face or body as a character. Six photographic skin-tone reference variants preserve the same fictional adult identity/pose, with original long/bob/short hair photo overlays and optional local tinting. Hair is composited after clothing so it can fall naturally in front. The photographic reference is aligned to the existing 320×520 dressing-room coordinate system, with garment widths calibrated in image space. Existing wardrobe records and saved placement values remain in their current format.
+
+Additional checks verify photographic source selection, isolated hair composition, fixed facial width during body shaping and namespaced SVG clip/filter IDs. The simulated DOM checks still cover the full wardrobe, US setup and demo isolation flow, plus photographic hair presence and foreground ordering. Actual browser rendering remains unverified in this environment; inspect desktop/mobile appearance and the preserved base-layer clothing before accepting the visual result.

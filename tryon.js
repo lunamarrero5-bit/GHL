@@ -8,7 +8,7 @@ function renderDressedAvatar(target,profile,ids,namespace,overrides={}) {
   stage.append(body);
   const pieces=Fitting.layers(ids.map(id=>state.items.find(item=>item.id===id)).filter(canUseItem));
   for(const item of pieces) {
-    const position=Fitting.placement(item,FitCheckAvatar.geometry(profile),overrides[item.id]);
+    const position=Fitting.placement(item,FitCheckHuman.clothingGeometry(FitCheckAvatar.geometry(profile)),overrides[item.id]);
     const layer=element('div','garment-overlay');layer.dataset.garmentId=item.id;
     layer.style.left=position.left/320*100+'%';layer.style.top=position.top/520*100+'%';
     layer.style.width=position.width/320*100+'%';layer.style.height=position.height/520*100+'%';

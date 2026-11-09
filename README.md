@@ -12,7 +12,7 @@ Choose **Use my own wardrobe** to manage actual owned clothing. Personal and dem
 
 ## Main features
 
-- **Personal model:** choose skin tone, hair style/color and optional first name. Height uses feet and inches; chest/bust, waist and hips use inches. Inseam and shoulder width are optional and marked as estimated when left blank. A measurement tutorial and six illustrated instructions are available.
+- **Personal model:** a generated photographic human reference with natural facial detail, skin texture, hands and body features. Choose among six skin-tone reference images, three photographic hairstyles (or no hair), hair color and an optional first name. Height uses feet and inches; chest/bust, waist and hips use inches. Inseam and shoulder width are optional and marked as estimated when left blank. A measurement tutorial and six illustrated instructions are available.
 - **Build a Look:** choose clothing photos and see them layered on the model. A new item replaces an existing item in the same category; a dress replaces top and bottoms. Layers and shoes can be added. Saved looks can be tried on again, and saving leaves the current look on the model.
 - **Adjust photo:** outline a garment by dragging numbered handles or moving them with arrow keys. Add/remove points, use the whole photo, and adjust position, width, length and rotation. Placement is saved with that garment and survives backups. Changing the garment photo or category clears the old placement.
 - **Owned wardrobe:** upload a JPG, PNG or WebP garment photo (up to 15 MB/50 megapixels), enter details, search/filter, edit/remove clothes and track laundry availability. Photos are resized to 600 px before browser storage.
@@ -21,9 +21,9 @@ Choose **Use my own wardrobe** to manage actual owned clothing. Personal and dem
 
 ## What the visual preview does
 
-The local preview composites actual uploaded garment photos (or transparent demo PNGs) on a shaded, measurement-informed 2D body model. For user uploads, a front-facing flat-lay or a transparent cutout gives the cleanest result. The outline tool can exclude a person or background from a clothing photo. Adjustments are visual placements, not garment dimensions.
+The local preview composites actual uploaded garment photos (or transparent demo PNGs) on a photographic human reference whose approximate body proportions respond to measurements. The face is preserved while the torso/leg reference is adjusted; hair is a separate photographic layer above the garments. For user uploads, a front-facing flat-lay or a transparent cutout gives the cleanest result. The outline tool can exclude a person or background from a clothing photo. Adjustments are visual placements, not garment dimensions.
 
-This is **not photorealistic AI virtual try-on**, a body scan, fabric/drape simulation or a clothing-size recommendation. The proportions are approximate. A dedicated rendering service/backend would be required for production-quality generated model photos and realistic garment fitting. No such service is connected, and no API keys are required for the current app.
+The human references are generated fictional people, not photographs or exact likenesses of the user. This is **not generative AI garment fitting**, a body scan, fabric/drape simulation or a clothing-size recommendation. The proportions are approximate. A dedicated rendering service/backend would be required for production-quality generated model photos and realistic garment fitting. No such service is connected, and no API keys are required for the current app.
 
 ## Storage and privacy
 
@@ -43,13 +43,14 @@ Earlier retailer/illustrated examples are retained only for backup compatibility
 - `index.html`, `style.css`, `atelier.css`: structure, forms, layout and visual design.
 - `script.js`, `experience.js`: wardrobe, outfits, storage, recommendations, planner and backups.
 - `core.js`: validation, ownership, dates and suggestion rules.
-- `avatar-core.js`, `atelier.js`: body model, US measurement setup and profile lifecycle.
+- `human-model.js`, `assets/human`: photographic human/hair assets, image-space calibration and approximate body shaping.
+- `avatar-core.js`, `atelier.js`: model rendering, US measurement setup and profile lifecycle. The drawn figures are retained only for instructional measurement diagrams.
 - `tryon-core.js`, `tryon.js`: garment selection, clipping, layering and placement editor.
 - `demo.js`, `assets/demo`: isolated demonstration wardrobe and original generated images.
 - `tests`: regression checks. Run `node --test tests/*.test.js` with Node 18+.
 
-The 59 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 48 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts.
+The 63 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 50 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts.
 
 ## Publishing
 
-Publish the full static folder, including every script and `assets/demo`. A feature-branch push does not update a site configured to deploy from `main`. If using GitHub Pages branch deployment, choose `main` and `/ (root)` in repository Settings → Pages. A successful Git push must still be followed by checking the deployment in the hosting service.
+Publish the full static folder, including every script, `assets/demo` and `assets/human`. A feature-branch push does not update a site configured to deploy from `main`. If using GitHub Pages branch deployment, choose `main` and `/ (root)` in repository Settings → Pages. A successful Git push must still be followed by checking the deployment in the hosting service.

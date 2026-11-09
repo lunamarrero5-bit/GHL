@@ -21,7 +21,7 @@
   function placement(item,geometry,override) {
     const v=validate(override||item.fitting||defaults(item),item.image);
     const {shoulder,hips}=geometry;
-    const boxes={Tops:[160-shoulder-14,121,(shoulder+14)*2,108],Bottoms:[160-hips-3,218,(hips+3)*2,261],Dresses:[160-Math.max(shoulder,hips)-12,120,(Math.max(shoulder,hips)+12)*2,290],Layers:[160-shoulder-18,119,(shoulder+18)*2,161],Shoes:[110,449,100,38]};
+    const boxes={Tops:[160-shoulder-14,121,(shoulder+14)*2,108],Bottoms:[160-hips-3,geometry.pantsTop||218,(hips+3)*2,479-(geometry.pantsTop||218)],Dresses:[160-Math.max(shoulder,hips)-12,120,(Math.max(shoulder,hips)+12)*2,290],Layers:[160-shoulder-18,119,(shoulder+18)*2,161],Shoes:[110,449,100,38]};
     if(!categories.includes(item.category)) throw Error('Unknown garment category.');
     const [x,y,w,h]=boxes[item.category];
     const minX=Math.min(...v.points.map(p=>p[0])),minY=Math.min(...v.points.map(p=>p[1]));

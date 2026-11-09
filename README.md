@@ -50,9 +50,9 @@ Earlier retailer/illustrated examples are retained only for backup compatibility
 - `demo.js`, `assets/demo`: isolated demonstration wardrobe and original generated images.
 - `tests`: regression checks. Run `node --test tests/*.test.js` with Node 18+.
 
-The 71 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 57 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts. Temperature-story scenarios and current verification limits are recorded in `docs/temperature-scenarios.md`.
+The 78 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 63 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts. Temperature-story scenarios and current verification limits are recorded in `docs/temperature-scenarios.md`.
 
-Temperature is optional. Unrealistic values show an inline error. When a valid temperature conflicts with the selected conditions, choose Switch conditions or Continue anyway; conditions are never silently replaced. Rain remains a separate footwear check.
+Temperature is optional. Unrealistic values show an inline error. When a valid temperature conflicts with the selected conditions, choose Switch conditions or Continue anyway; conditions are never silently replaced. Rain remains a separate footwear check; at cold temperatures, choose Chilly to require a layer and check rain protection yourself. Unit changes preserve the original entered reading for validation and condition classification.
 
 ## Publishing
 

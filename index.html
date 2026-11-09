@@ -12,10 +12,10 @@
   <script src="avatar-core.js?v=photo-studio-v1" defer></script>
   <script src="tryon-core.js?v=photo-studio-v1" defer></script>
   <script src="studio-layers.js" defer></script>
-  <script src="demo.js" defer></script>
+  <script src="demo.js?v=revolve-examples-v1" defer></script>
   <script src="photo-studio.js?v=photo-studio-v1" defer></script>
   <script src="core.js" defer></script>
-  <script src="script.js?v=photo-studio-v1" defer></script>
+  <script src="script.js?v=revolve-examples-v1" defer></script>
   <script src="experience.js?v=direct-save" defer></script>
   <script src="tryon.js?v=photo-studio-v1" defer></script>
   <script src="atelier.js?v=photo-studio-v1" defer></script>
@@ -79,7 +79,8 @@
     </section>
 
     <section id="closet-view" class="view" aria-labelledby="closet-heading" hidden>
-      <div class="section-heading"><div><p class="eyebrow">CLOTHES YOU ALREADY OWN</p><h2 id="closet-heading">My closet <span class="count" id="closet-count">0</span></h2></div><button class="button dark" id="add-item">+ Add a piece</button></div>
+      <div class="section-heading"><div><p class="eyebrow" id="closet-eyebrow">STYLE EXAMPLES TO EXPLORE</p><h2 id="closet-heading">My closet <span class="count" id="closet-count">0</span></h2></div><button class="button dark" id="add-item">+ Add a piece</button></div>
+      <p class="field-hint" id="revolve-examples-note">Explore item-only fashion references from Revolve in the demo wardrobe. <button type="button" class="text-button" id="add-revolve-examples">Add Revolve examples ↗</button></p>
       <div class="toolbar">
         <label class="search-label">Search your closet<input type="search" id="closet-search" placeholder="Name or color…" maxlength="80"></label>
         <div class="categories" role="group" aria-label="Filter by category">

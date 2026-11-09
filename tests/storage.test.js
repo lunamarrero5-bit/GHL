@@ -32,7 +32,7 @@ test('uploaded user photographs are preserved during starter migration',()=>{
 
 test('demo examples are explicitly separate from uploaded ownership',()=>{
   const h=harness(null,false,'demo');
-  assert.equal(h.run('state.items.length'),5);
+  assert.equal(h.run('state.items.length'),14);
   assert.equal(h.run('state.items.every(item=>item.origin==="demo" && !FitCheck.isOwned(item))'),true);
   assert.equal(h.run('selected.size'),3);
 });

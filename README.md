@@ -6,7 +6,7 @@
 
 Open `index.html` in a modern browser, or serve this folder with `python3 -m http.server 8000 --bind 127.0.0.1` and visit `http://127.0.0.1:8000`. Use the same hostname and port to keep accessing the same browser storage.
 
-The first visit opens **Demo dressing room**, with a cherry tee, black trousers and white sneakers already on the model. Choose **Build a Look** to swap in a black dress or add an ivory blazer. The five original, unbranded demo images are photorealistic generated examples, not items offered for sale or clothes presumed to belong to a user. No retailer catalog, product links or shopping flow is included.
+The first visit opens **Demo dressing room**, with a cherry tee, black trousers and white sneakers already on the model. Choose **Build a Look** to swap in a black dress or add an ivory blazer. Alongside five original generated samples, nine labeled Revolve references cover jeans, shirts, dresses, sneakers and heels. Existing demo wardrobes can use **Add Revolve examples** without resetting saved outfits or adjustments. Each reference links to its product page; clothing cutouts edited from model photos are labeled. These examples are separate from clothes owned by the user. Image sources and editing details are in `assets/demo/revolve/SOURCES.md`.
 
 Choose **Use my own wardrobe** to manage actual owned clothing. Personal and demo wardrobes, outfits, plans and wear histories are stored separately. The avatar profile is shared, so the same selected shape preset can be used to test the demo. Uploading a garment from demo mode first switches to the personal wardrobe.
 

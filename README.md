@@ -43,13 +43,16 @@ Earlier retailer/illustrated examples are retained only for backup compatibility
 - `index.html`, `style.css`, `atelier.css`: structure, forms, layout and visual design.
 - `script.js`, `experience.js`: wardrobe, outfits, storage, recommendations, planner and backups.
 - `core.js`: validation, ownership, dates and suggestion rules.
+- `temperature.js`: optional-temperature validation and condition-conflict checks.
 - `human-model.js`, `assets/human`: photographic human/hair assets, image-space calibration and approximate body shaping.
 - `avatar-core.js`, `atelier.js`: model rendering, US measurement setup and profile lifecycle. The drawn figures are retained only for instructional measurement diagrams.
 - `tryon-core.js`, `tryon.js`: garment selection, clipping, layering and placement editor.
 - `demo.js`, `assets/demo`: isolated demonstration wardrobe and original generated images.
 - `tests`: regression checks. Run `node --test tests/*.test.js` with Node 18+.
 
-The 63 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 50 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts.
+The 71 synchronous regression checks passed using a JavaScriptCore compatibility runner in the implementation environment, where Node was unavailable. A simulated DOM walkthrough passed 57 interactions, including wardrobe separation and dressing the model. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts. Temperature-story scenarios and current verification limits are recorded in `docs/temperature-scenarios.md`.
+
+Temperature is optional. Unrealistic values show an inline error. When a valid temperature conflicts with the selected conditions, choose Switch conditions or Continue anyway; conditions are never silently replaced. Rain remains a separate footwear check.
 
 ## Publishing
 

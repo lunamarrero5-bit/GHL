@@ -59,7 +59,7 @@ function commit(nextState) {
 }
 
 function switchWardrobeMode(demo) {
-  if($('#garment-dialog').open)$('#garment-dialog').close();
+  if($('#avatar-dialog').open)$('#avatar-dialog').close();
   isDemoMode=demo;STORAGE_KEY=demo?DEMO_STORAGE_KEY:OWN_STORAGE_KEY;
   recoveryMode=false;state=loadState();undoState=null;$('#undo-change').hidden=true;
   selected=new Set(demo?FitCheckDemo.initialSelection:[]);activeLooks=[];suggestionMessage=demo?'Choose an occasion to find combinations from the sample wardrobe.':'Choose an occasion to find combinations from your own wardrobe.';
@@ -78,6 +78,7 @@ function showView(view, scroll = true) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
+  if (typeof renderAtelier === 'function') renderAtelier();
   if (scroll) $(`#${view}-view`).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
 
@@ -124,8 +125,8 @@ function itemCard(item, selectable = false) {
   const meta = element('div', 'piece-meta');
   meta.append(element('span', '', `${item.origin==='demo'?'DEMO · ':''}${item.color} · ${item.category}`));
   if (!selectable) {
-    const edit = element('button', 'text-button', item.origin==='demo'?'Adjust photo':'Edit'); edit.setAttribute('aria-label', `Edit ${item.name}`);
-    edit.addEventListener('click', () => item.origin==='demo'?openGarmentEditor(item):editPiece(item)); meta.append(edit);
+    const edit = element('button', 'text-button', 'Edit'); edit.setAttribute('aria-label', `Edit ${item.name}`);
+    edit.addEventListener('click', () => editPiece(item)); if(item.origin!=='demo') meta.append(edit);
     const remove = element('button', 'text-button', 'Remove');
     remove.setAttribute('aria-label', `Remove ${item.name}`);
     remove.addEventListener('click', () => removeItem(item));
@@ -186,8 +187,7 @@ function renderBuilder() {
     const row = element('div', 'selected-row');
     const remove = element('button', '', '×'); remove.type = 'button'; remove.setAttribute('aria-label', `Unselect ${item.name}`);
     remove.addEventListener('click', () => { selected.delete(item.id); renderBuilder(); });
-    const adjust=element('button','text-button','Adjust photo');adjust.type='button';adjust.setAttribute('aria-label',`Adjust ${item.name} on your model`);adjust.addEventListener('click',()=>openGarmentEditor(item));
-    row.append(itemImage(item), element('span', '', item.name), adjust, remove); return row;
+    row.append(itemImage(item), element('span', '', item.name), remove); return row;
   });
   $('#selected-items').replaceChildren(...(rows.length ? rows : [element('p', 'selection-hint', 'Your look is a blank canvas. Select a piece to get started.')]));
   if (typeof renderAtelier === 'function') renderAtelier();

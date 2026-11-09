@@ -36,3 +36,14 @@ test('demo examples are explicitly separate from uploaded ownership',()=>{
   assert.equal(h.run('state.items.every(item=>item.origin==="demo" && !FitCheck.isOwned(item))'),true);
   assert.equal(h.run('selected.size'),3);
 });
+
+test('saved model preferences survive the actual commit and reload storage path',()=>{
+  const M=require('../model-core.js');
+  const preference={modelId:M.pickModel(M.defaults).id,preferences:M.defaults};
+  const old={items:[{id:'mine',name:'My tee',category:'Tops',color:'Red',occasion:'Casual',image:'data:image/jpeg;base64,aGVsbG8='}],outfits:[{id:'saved',name:'Monday',occasion:'Casual',itemIds:['mine']}]};
+  const h=harness(JSON.stringify(old));
+  assert.equal(h.run(`commit({...state,modelPreference:${JSON.stringify(preference)}})`),true);
+  const reloaded=harness(h.stored);
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.run('state.modelPreference'))),preference);
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.run('state.outfits'))),old.outfits);
+});

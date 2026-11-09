@@ -4,20 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f6f4ef">
-  <meta name="description" content="Your wardrobe, made personal. Create your FitCheck avatar, rediscover your clothes, and curate looks for every occasion.">
+  <meta name="description" content="Your wardrobe, made personal. Choose your FitCheck model, rediscover your clothes, and curate looks for every occasion.">
   <title>FITCHECK — The Personal Wardrobe Atelier</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="atelier.css">
-  <script src="human-model.js" defer></script>
-  <script src="avatar-core.js" defer></script>
+  <link rel="stylesheet" href="atelier.css?v=model-library">
+  <script src="models.js?v=model-library" defer></script>
+  <script src="model-core.js?v=model-library" defer></script>
+  <script src="render-core.js?v=model-library" defer></script>
+  <script src="tryon-provider.js?v=model-library" defer></script>
   <script src="tryon-core.js" defer></script>
   <script src="demo.js" defer></script>
-  <script src="core.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="core.js?v=model-library" defer></script>
+  <script src="script.js?v=model-library" defer></script>
   <script src="temperature.js?v=temperature-precision" defer></script>
   <script src="experience.js?v=temperature-precision" defer></script>
-  <script src="tryon.js" defer></script>
-  <script src="atelier.js" defer></script>
+  <script src="tryon.js?v=model-library" defer></script>
+  <script src="atelier.js?v=model-library" defer></script>
 </head>
 <body>
   <noscript><p class="recovery-banner">FitCheck needs JavaScript to manage your closet. Please enable JavaScript and reload this page.</p></noscript>
@@ -45,12 +47,12 @@
           <p class="intro">A wardrobe worth rediscovering.<br>A dressing room made around you.</p>
           <button class="button dark" id="create-avatar">PERSONALIZE MY MODEL <span aria-hidden="true">↗</span></button>
           <button class="text-button hero-secondary" id="start-outfit">BUILD A LOOK →</button>
-          <div class="hero-footnote"><span class="small-rule"></span><p>YOUR MEASUREMENTS. YOUR PERSPECTIVE.<br>A MORE PERSONAL WAY TO GET DRESSED.</p></div>
+          <div class="hero-footnote"><span class="small-rule"></span><p>NO PHOTO NEEDED. YOUR PERSPECTIVE.<br>A MORE PERSONAL WAY TO GET DRESSED.</p></div>
         </div>
         <div class="avatar-stage">
-          <div class="stage-topline"><span>01 / THE FIT STUDIO</span><span id="avatar-status">GENERATED HUMAN REFERENCE</span></div>
+          <div class="stage-topline"><span>01 / THE FIT STUDIO</span><span id="avatar-status">MODEL LIBRARY · PLACEHOLDER</span></div>
           <div id="home-avatar" class="avatar-canvas" aria-live="off"></div>
-          <div class="avatar-dimension" id="avatar-height">MADE TO YOUR MEASUREMENTS</div>
+          <div class="avatar-dimension" id="avatar-height">CHOSEN FOR YOU</div>
           <div class="stage-bottomline"><span id="avatar-caption">Make this silhouette yours.</span><button id="edit-avatar" class="text-button">PERSONALIZE ↗</button></div>
         </div>
       </div>
@@ -97,10 +99,17 @@
 
     <section id="builder-view" class="view" aria-labelledby="builder-heading" hidden>
       <div class="section-heading"><div><p class="eyebrow">A LITTLE MIX. A LITTLE MATCH.</p><h2 id="builder-heading">Build a Look</h2></div></div>
-      <p class="section-intro">Choose your own clothes and see the combination on your personalized model. Select one piece per category; selecting a dress replaces the top and bottoms.</p>
+      <p class="section-intro">Choose your own clothes for an instant flat collage, then request a preview with your selected model. Select one piece per category; selecting a dress replaces the top and bottoms.</p>
       <div class="builder-layout">
         <div><h3>Choose your pieces</h3><div id="builder-grid" class="closet-grid builder-grid"></div><p id="builder-empty" class="empty" hidden>Your closet is empty. Add a piece in My closet to get started.</p></div>
-        <aside class="outfit-panel"><div class="builder-avatar-heading"><span class="eyebrow">YOUR PERSONAL DRESSING ROOM</span><button class="text-button" id="builder-edit-avatar">EDIT ↗</button></div><div id="builder-avatar" class="builder-avatar"></div><p id="tryon-status" class="field-hint" role="status">Choose a piece to dress your model.</p><p class="field-hint">Live photo-placement preview. Use Adjust photo to outline the garment and refine its position. This preview does not predict fit or fabric drape.</p><h3>Your outfit <span id="selection-count" class="count">0</span></h3><div id="selected-items"></div><form id="outfit-form"><label for="outfit-name">Outfit name</label><input id="outfit-name" name="name" maxlength="60" placeholder="e.g. Office Monday" required><label for="outfit-occasion">Occasion</label><select id="outfit-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select><button class="button dark full" type="submit">Save this outfit ♡</button><button class="text-button full" type="button" id="clear-selection">Clear selection</button></form></aside>
+        <aside class="outfit-panel"><div class="builder-avatar-heading"><span class="eyebrow">YOUR LIBRARY MODEL</span><button class="text-button" id="builder-edit-avatar">PERSONALIZE ↗</button></div>
+          <div id="builder-avatar" class="builder-avatar"></div>
+          <h3>Instant outfit collage</h3><div id="outfit-collage" class="outfit-collage"></div><p id="collage-empty" class="field-hint">Select pieces to see your collage.</p>
+          <button id="render-outfit" class="button dark full" type="button">See it on my model</button>
+          <p id="tryon-status" class="field-hint" role="status" aria-live="polite"></p><button id="retry-render" class="button secondary" type="button" hidden>Retry render</button>
+          <p class="field-hint">Mock preview: garments appear beside the model. A fitted try-on provider is not connected. No images leave this browser.</p><p id="render-allowance" class="field-hint"></p>
+          <h3>Your outfit <span id="selection-count" class="count">0</span></h3><div id="selected-items"></div><form id="outfit-form"><label for="outfit-name">Outfit name</label><input id="outfit-name" name="name" maxlength="60" placeholder="e.g. Office Monday" required><label for="outfit-occasion">Occasion</label><select id="outfit-occasion"><option>Casual</option><option>Work</option><option>Going out</option></select><button class="button dark full" type="submit">Save this outfit ♡</button><button class="text-button full" type="button" id="clear-selection">Clear selection</button></form>
+        </aside>
       </div>
     </section>
 
@@ -121,69 +130,21 @@
     </section>
     <p class="storage-note">Made for your real wardrobe. Saved on this browser, just for you.<br><button id="undo-change" class="text-button" hidden>Undo last change</button></p>
   </main>
-  <footer><div><a href="index.html" class="logo">FITCHECK</a><p>THE PERSONAL WARDROBE ATELIER</p></div><span>Your wardrobe. A new perspective.</span><div class="footer-actions"><button class="text-button" id="footer-avatar">MY MODEL</button><button class="text-button" id="open-guide">MEASUREMENT GUIDE ↗</button></div></footer>
+  <footer><div><a href="index.html" class="logo">FITCHECK</a><p>THE PERSONAL WARDROBE ATELIER</p></div><span>Your wardrobe. A new perspective.</span><div class="footer-actions"><button class="text-button" id="footer-avatar">MY MODEL</button></div></footer>
 
   <dialog id="avatar-dialog" class="avatar-dialog" aria-labelledby="avatar-dialog-title">
-    <div class="avatar-dialog-top"><a class="logo" href="#" id="avatar-brand">FITCHECK</a><span>YOUR PERSONAL DRESSING ROOM</span><button class="icon-button" id="close-avatar" aria-label="Close avatar setup">×</button></div>
-    <div class="setup-layout">
-      <div class="setup-content">
-        <ol class="setup-progress" aria-label="Avatar setup progress"><li data-setup-step="0" aria-current="step">01 <span>THE DETAILS</span></li><li data-setup-step="1">02 <span>THE MEASUREMENTS</span></li><li data-setup-step="2">03 <span>THE REVEAL</span></li></ol>
-        <form id="avatar-form" novalidate>
-          <div class="setup-step" id="setup-step-0">
-            <p class="eyebrow">A LITTLE MORE YOU</p><h2 id="avatar-dialog-title">Meet your<br><em>human model.</em></h2><p class="setup-intro">Choose a photographic human reference, then enter your measurements to adjust the preview’s proportions.</p>
-            <label for="avatar-name">First name <span class="optional">/ optional</span></label><input id="avatar-name" maxlength="40" autocomplete="given-name" placeholder="What should we call you?">
-            <fieldset class="swatch-fieldset"><legend>Skin tone</legend><div class="swatches" id="skin-swatches"></div></fieldset>
-            <div class="form-columns"><div><label for="avatar-hairstyle">Hair style</label><select id="avatar-hairstyle"><option value="long">Long</option><option value="bob">Bob</option><option value="short">Short</option><option value="none">No hair</option></select></div><fieldset class="swatch-fieldset"><legend>Hair color</legend><div class="swatches compact" id="hair-swatches"></div></fieldset></div>
-          </div>
-          <div class="setup-step" id="setup-step-1" hidden>
-            <p class="eyebrow">TAILORED TO YOUR PROPORTIONS</p><h2>Your body.<br><em>Your numbers.</em></h2><p class="setup-intro">You only need height, chest/bust, waist and hips. Use a soft tape over light clothing, standing naturally. Inseam and shoulder width can be estimated if you leave them blank.</p>
-            <button class="video-teaser" id="setup-guide" type="button"><span class="play-circle" aria-hidden="true">▶</span><span><strong>A guide to measuring yourself</strong><small>Watch the tutorial + follow the six-step guide</small></span><span aria-hidden="true">↗</span></button>
-            <p class="us-measurement-note">US measurements · Height in feet & inches. All other measurements in inches.</p>
-            <fieldset class="height-fieldset"><legend>01 / Height</legend><div class="form-columns"><div><label for="height-feet">Feet</label><input type="number" id="height-feet" min="3" max="7" step="1" inputmode="numeric" placeholder="5" required></div><div><label for="height-inches">Inches</label><input type="number" id="height-inches" min="0" max="11.9" step="0.1" inputmode="decimal" placeholder="6"></div></div></fieldset>
-            <div class="measurement-fields" id="measurement-fields"></div>
-            <p class="measurement-help" id="measurement-help" aria-live="polite">Select a field for a measuring tip and a highlighted guide on your model.</p>
-          </div>
-          <div class="setup-step" id="setup-step-2" hidden>
-            <p class="eyebrow">CONSIDER IT PERSONAL</p><h2>A silhouette<br><em>of your own.</em></h2><p class="setup-intro">Natural facial detail, skin texture, hands and hair make this a more human styling reference. Your measurements adjust its approximate proportions.</p>
-            <dl id="measurement-summary" class="measurement-summary"></dl>
-            <p class="profile-privacy">Your name and measurements stay in this browser. You can edit, export, or delete your model anytime.</p>
-            <p class="field-hint">This generated human reference is not an exact likeness or body scan. Clothing photos and approximate body proportions support visual styling, not size or fit prediction.</p>
-          </div>
-          <p class="form-error" id="avatar-error" role="alert"></p>
-          <div class="setup-actions"><button type="button" class="text-button" id="setup-back" hidden>← BACK</button><button type="submit" class="button dark" id="setup-next">CONTINUE <span aria-hidden="true">→</span></button></div>
-        </form>
-      </div>
-      <aside class="setup-preview"><div class="stage-topline"><span>YOUR SILHOUETTE</span><span id="preview-status">PREVIEW</span></div><div id="setup-avatar" class="avatar-canvas"></div><p class="preview-caption">Uniquely proportioned.<br><em>Unmistakably yours.</em></p><p class="preview-note" id="preview-note">Example proportions until you add your measurements.</p></aside>
-    </div>
-    <div class="profile-manage" id="profile-manage" hidden><button type="button" class="text-button" id="export-avatar">DOWNLOAD AVATAR DATA ↓</button><button type="button" class="text-button" id="delete-avatar">DELETE MY MODEL</button></div>
-  </dialog>
-
-  <dialog id="guide-dialog" class="guide-dialog" aria-labelledby="guide-title">
-    <div class="dialog-heading"><div><p class="eyebrow">THE MEASUREMENT MASTERCLASS</p><h2 id="guide-title">A good fit starts here.</h2></div><button class="icon-button" id="close-guide" aria-label="Close measurement guide">×</button></div>
-    <p class="section-intro">Take your time. There’s no ideal number—just the measurements that are yours.</p>
-    <div class="video-container" id="measurement-video"><button class="video-load" id="load-video"><span class="play-circle" aria-hidden="true">▶</span><strong>WATCH THE MEASUREMENT TUTORIAL</strong><span>Crafty Gemini · Bust, waist & hips</span></button></div>
-    <p class="field-hint">Video by Crafty Gemini. Playing loads YouTube. If playback is unavailable, <a href="https://www.youtube.com/watch?v=ajdM2TqRehI" target="_blank" rel="noopener noreferrer">watch on YouTube ↗</a> or follow the illustrated guide below.</p>
-    <div id="measurement-guide-grid" class="measurement-guide-grid"></div>
-    <a class="guide-source text-button" href="https://craftygemini.com/2018/04/sewing-clothes-video-series-take-body-measurements.html" target="_blank" rel="noopener noreferrer">VIDEO & MEASUREMENT REFERENCE: CRAFTY GEMINI ↗</a>
-  </dialog>
-
-  <dialog id="garment-dialog" class="garment-dialog" aria-labelledby="garment-title">
-    <div class="dialog-heading"><div><p class="eyebrow">YOUR CLOTHES. YOUR MODEL.</p><h2 id="garment-title">Adjust your garment</h2></div><button type="button" class="icon-button" id="close-garment" aria-label="Close garment adjustment">×</button></div>
-    <p class="section-intro">Outline just the clothing in your photo, then position it on your model. A front-facing flat-lay photo gives the cleanest result. If someone is wearing the garment, exclude their face and skin from the outline.</p>
-    <div class="garment-editor-layout"><div>
-      <p class="field-hint" id="outline-instructions">Drag numbered points around the garment.</p>
-      <div class="outline-stage" id="outline-stage"><img id="outline-photo" alt="Your garment photo"><svg id="outline-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg></div>
-      <div class="outline-actions"><button type="button" class="text-button" id="add-outline-point" aria-pressed="false">+ Add outline point</button><button type="button" class="text-button" id="remove-outline-point">Remove selected point</button><button type="button" class="text-button" id="whole-photo">Use whole photo</button></div>
-      <p class="field-hint">Keyboard: Tab to a numbered point, then use arrow keys to move it. Hold Shift for larger moves.</p>
-      <div class="placement-sliders">
-        <label for="garment-x">Move left / right <output id="garment-x-value">0</output><input type="range" id="garment-x" min="-100" max="100" step="1"></label>
-        <label for="garment-y">Move up / down <output id="garment-y-value">0</output><input type="range" id="garment-y" min="-150" max="150" step="1"></label>
-        <label for="garment-width">Width <output id="garment-width-value">100%</output><input type="range" id="garment-width" min="0.35" max="2.5" step="0.01"></label>
-        <label for="garment-height">Length <output id="garment-height-value">100%</output><input type="range" id="garment-height" min="0.35" max="2.5" step="0.01"></label>
-        <label for="garment-rotation">Rotation <output id="garment-rotation-value">0°</output><input type="range" id="garment-rotation" min="-45" max="45" step="1"></label>
-      </div>
-    </div><aside><div id="garment-preview" class="garment-preview"></div><p class="field-hint">A photo-based styling preview. Scale and position are visual adjustments, not garment dimensions or fit predictions.</p></aside></div>
-    <p id="garment-error" class="form-error" role="alert"></p><div class="setup-actions"><button type="button" class="text-button" id="reset-garment">Reset outline & position</button><button type="button" class="button dark" id="save-garment">Save garment placement ↗</button></div>
+    <div class="avatar-dialog-top"><span class="logo">FITCHECK</span><span>YOUR MODEL LIBRARY</span><button class="icon-button" id="close-avatar" aria-label="Close model personalization">×</button></div>
+    <div class="setup-layout"><div class="setup-content">
+      <p class="eyebrow">A LITTLE MORE YOU</p><h2 id="avatar-dialog-title">Choose your<br><em>model.</em></h2>
+      <p class="setup-intro">Choose a close match from our model library. No photo or body scan needed. These illustrations are placeholders in the same neutral pose and plain fitted base layer.</p>
+      <form id="avatar-form" novalidate>
+        <label for="model-height">Height (cm)</label><input id="model-height" type="number" min="120" max="220" step="0.1" required>
+        <label for="model-build">Build</label><select id="model-build"></select>
+        <label for="model-skin">Skin tone</label><select id="model-skin"></select>
+        <div class="form-columns"><div><label for="model-hair-style">Hair style</label><select id="model-hair-style"></select></div><div><label for="model-hair-color">Hair color</label><select id="model-hair-color"></select></div></div>
+        <p class="field-hint">Your choices find the closest available model. Height adjusts its overall size by at most 4%; proportions stay intact. Saved with this wardrobe on this browser.</p>
+        <p class="form-error" id="avatar-error" role="alert"></p><button class="button dark full" type="submit">Save my model ↗</button>
+      </form></div><aside class="setup-preview"><div class="stage-topline"><span>CLOSEST MATCH</span><span>LIVE PREVIEW</span></div><div id="setup-avatar" class="avatar-canvas"></div><p id="model-match" class="field-hint" role="status"></p></aside></div>
   </dialog>
 
   <dialog id="suggested-save-dialog" aria-labelledby="suggested-save-title" aria-describedby="suggested-save-description">

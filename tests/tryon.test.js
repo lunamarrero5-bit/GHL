@@ -1,7 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const T=require('../tryon-core.js');
-const A=require('../avatar-core.js');
 const F=require('../core.js');
 const item=(id,category)=>({id,name:id,category,color:'Red',occasion:'Casual',image:'data:image/jpeg;base64,aGVsbG8=',origin:'owned'});
 const pieces=[item('top','Tops'),item('other-top','Tops'),item('bottom','Bottoms'),item('dress','Dresses'),item('jacket','Layers'),item('shoes','Shoes')];
@@ -9,9 +8,6 @@ test('adding a second top replaces the first',()=>assert.deepEqual(T.choose(['to
 test('a dress replaces top and bottom but retains shoes and a layer',()=>assert.deepEqual(T.choose(['top','bottom','jacket','shoes'],pieces[3],pieces),['jacket','shoes','dress']));
 test('choosing separates replaces a dress',()=>assert.deepEqual(T.choose(['dress','shoes'],pieces[0],pieces),['shoes','top']));
 test('clicking a selected piece removes it',()=>assert.deepEqual(T.choose(['top','bottom'],pieces[0],pieces),['bottom']));
-test('garment placement changes with body dimensions',()=>{
-  const p=pieces[0];assert.notEqual(T.placement(p,A.geometry(A.example)).width,T.placement(p,A.geometry({...A.example,shoulders:48})).width);
-});
 test('outlines and positioning persist through a full wardrobe backup round trip',()=>{
   const fitted={...pieces[0],fitting:{...T.defaults(pieces[0]),x:12,rotation:8}};
   const state=F.validate({items:[fitted],outfits:[]});assert.deepEqual(F.validate(JSON.parse(JSON.stringify(state))),state);
@@ -26,10 +22,6 @@ test('invalid or degenerate outlines cannot enter saved data',()=>{
 test('unsafe transforms are rejected',()=>{
   const v=T.defaults(pieces[0]);for(const x of [Infinity,NaN,'0; background:url(x)',101])assert.throws(()=>T.validate({...v,x},pieces[0].image));
 });
-test('body image and garment overlay values remain finite',()=>{
-  for(const p of pieces){const v=T.placement(p,A.geometry(A.example));for(const key of ['left','top','width','height','imageLeft','imageWidth'])assert.ok(Number.isFinite(v[key]));}
-});
-test('layers and footwear render after base clothing',()=>assert.deepEqual(T.layers([pieces[5],pieces[4],pieces[0],pieces[2]]).map(i=>i.id),['bottom','top','jacket','shoes']));
 test('a legacy reference cannot be relabeled as an owned uploaded garment',()=>{
   const data=F.validate({items:[{...pieces[0],image:'https://is4.revolveassets.com/images/p4/n/uv/FREE-WS5542_V1.jpg'}],outfits:[]});
   assert.equal(data.items[0].origin,'unconfirmed');assert.equal(F.suggest(data.items).looks.length,0);

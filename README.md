@@ -1,59 +1,44 @@
 # FitCheck
 
-**Your clothes. Your proportions. Your next look.** FitCheck helps people who own plenty of clothes but repeat the same outfits rediscover combinations in their existing wardrobe. This class project uses HTML, CSS and JavaScript.
+Rediscover combinations of clothes you already own. This static HTML, CSS and JavaScript app uses a model library and requires no personal photo.
 
-## See it in action
+## Run
 
-Open `index.html` in a modern browser, or serve this folder with `python3 -m http.server 8000 --bind 127.0.0.1` and visit `http://127.0.0.1:8000`. Use the same hostname and port to keep accessing the same browser storage.
+Serve the repository with `python3 -m http.server 8000 --bind 127.0.0.1` and open `http://127.0.0.1:8000`. Keep the same hostname and port to retain access to browser storage. Run regression tests with Node 18+: `node --test tests/*.test.js`.
 
-The first visit opens **Demo dressing room**, with a cherry tee, black trousers and white sneakers already on the model. Choose **Build a Look** to swap in a black dress or add an ivory blazer. The five original, unbranded demo images are photorealistic generated examples, not items offered for sale or clothes presumed to belong to a user. No retailer catalog, product links or shopping flow is included.
+## Model and outfit preview
 
-Choose **Use my own wardrobe** to manage actual owned clothing. Personal and demo wardrobes, outfits, plans and wear histories are stored separately. The avatar profile is shared, so the same personal proportions can be used to test the demo. Uploading a garment from demo mode first switches to the personal wardrobe.
+Personalize selects the closest full-body model by height, build, skin tone, hair style and hair color. The current library contains 72 illustrative placeholders with the same 320 × 520 canvas, framing, neutral pose and plain fitted base layer. Replace the images and edit `models.js` to expand or reduce the library; no fixed model count is assumed. One image element moves between home, personalization and the builder. Height applies a uniform scale capped at ±4%; body parts are never stretched or stacked.
 
-## Main features
+Build a Look shows an instant flat collage of the chosen closet cutouts. A dress replaces separates, and a piece replaces the existing selection in its category. **See it on my model** runs a separate preview step. Its current local mock shows the garments **beside** the model in one image; it does not generate fitted clothing. Loading, retry and timeout states leave the collage available. Changing the selection or workspace discards stale render completions.
 
-- **Personal model:** a generated photographic human reference with natural facial detail, skin texture, hands and body features. Choose among six skin-tone reference images, three photographic hairstyles (or no hair), hair color and an optional first name. Height uses feet and inches; chest/bust, waist and hips use inches. Inseam and shoulder width are optional and marked as estimated when left blank. A measurement tutorial and six illustrated instructions are available.
-- **Build a Look:** choose clothing photos and see them layered on the model. A new item replaces an existing item in the same category; a dress replaces top and bottoms. Layers and shoes can be added. Saved looks can be tried on again, and saving leaves the current look on the model.
-- **Adjust photo:** outline a garment by dragging numbered handles or moving them with arrow keys. Add/remove points, use the whole photo, and adjust position, width, length and rotation. Placement is saved with that garment and survives backups. Changing the garment photo or category clears the old placement.
-- **Owned wardrobe:** upload a JPG, PNG or WebP garment photo (up to 15 MB/50 megapixels), enter details, search/filter, edit/remove clothes and track laundry availability. Photos are resized to 600 px before browser storage.
-- **Style me:** rule-based ideas using the current workspace, occasion, entered conditions, optional temperature and logged wear. Incomplete inventories show a gap rather than invent clothes. Demo items are only eligible in demo mode.
-- **Saved looks, planner and insights:** save combinations, plan dates, log actual wear, correct logs, inspect usage and download/restore JSON backups. Saving and planning do not record wear. Undo is available for the most recent successful change until reload.
+`tryon-provider.js` exposes `createMockProvider()`, whose interface is `renderOutfit({ modelImage, garments }) => Promise<imageUrl>`. The arguments contain the selected model image and an array of garment image URLs. Swap the provider at the construction site in `tryon.js`. A real vendor should be called through your authenticated backend, with credentials kept server-side; update the mock disclosure when connecting it.
 
-## What the visual preview does
+`render-core.js` caches up to 20 results per session, keyed by model ID plus sorted garment IDs. Reordered and concurrent identical requests share a result. Replacing an image under an existing ID invalidates that entry. A cached result consumes no attempt. Five provider attempts per browser per UTC day are allowed, including failed attempts. Usage persists separately from the wardrobe and is shared across demo and personal modes. Web Locks serialize allowance reservations across tabs where supported. There is no user account: cross-device quotas and tamper-resistant per-user enforcement require the future authenticated backend. Clearing browser storage resets the local limit.
 
-The local preview composites actual uploaded garment photos (or transparent demo PNGs) on a photographic human reference whose approximate body proportions respond to measurements. The face is preserved while the torso/leg reference is adjusted; hair is a separate photographic layer above the garments. For user uploads, a front-facing flat-lay or a transparent cutout gives the cleanest result. The outline tool can exclude a person or background from a clothing photo. Adjustments are visual placements, not garment dimensions.
+## Wardrobe and saved outfits
 
-The human references are generated fictional people, not photographs or exact likenesses of the user. This is **not generative AI garment fitting**, a body scan, fabric/drape simulation or a clothing-size recommendation. The proportions are approximate. A dedicated rendering service/backend would be required for production-quality generated model photos and realistic garment fitting. No such service is connected, and no API keys are required for the current app.
+Demo dressing room starts with five generated garment cutouts, with a tee, trousers and sneakers selected. Use **Use my own wardrobe** for actual owned clothing. Uploading from the demo switches to the personal wardrobe. No retailer catalog, shopping feed or personal photo is required.
 
-## Storage and privacy
+Wardrobe validation, saved outfit IDs and garments, direct Save outfit, reuse, planner, wear history, undo and backup/restore retain their existing behavior. Legacy garment fitting metadata still validates and survives backups, although the obsolete photo-placement editor and layered avatar have been removed. Retired model IDs rematch their saved preferences without invalidating outfits.
 
-- `fitcheck-v1`: personal clothing, outfits, plans and wear history.
-- `fitcheck-demo-v1`: demo clothing, placements, outfits, plans and wear history.
-- `fitcheck-mode`: remembered demo/personal workspace selection.
-- `fitcheck-avatar-v1`: optional first name, appearance and measurements, stored canonically in centimeters but entered/displayed in US units.
+Temperature remains optional, with inline range errors and explicit choices when conditions conflict. Unit switches preserve the entered reading for validation and classification. Rain supplies a footwear reminder; choose Chilly to require a layer for cold rain.
 
-Profile data and uploaded photos stay in this browser. There is no account, cloud sync, shopping integration, live weather or analytics upload. Demo PNGs load from the local `assets/demo` folder. The instructional video loads YouTube only after Play is pressed and is removed when the guide closes.
+## Storage
 
-Storage quotas/private browsing/clearing browser data can affect persistence. Save failures retain the previous state and report an error. Avatar data can be downloaded/deleted separately; wardrobe backups do not overwrite the avatar. Demo backups are labeled and cannot be restored into the personal workspace. Reset demo does not alter personal data or the avatar.
+- `fitcheck-v1` and `fitcheck-demo-v1`: separate validated wardrobes, outfits, plans and optional `modelPreference: { modelId, preferences }` records. Model preferences travel in the existing wardrobe backup.
+- `fitcheck-mode`: current demo/personal mode.
+- `fitcheck-render-usage-v1`: local daily render-attempt budget.
+- Old `fitcheck-avatar-v1` data is left untouched for recovery and is no longer read or rendered.
 
-Earlier retailer/illustrated examples are retained only for backup compatibility, marked unconfirmed and excluded from personal styling and previews. Their external image URLs are never fetched. Review them in My wardrobe to upload a photo of an actual owned piece or remove the earlier example. Existing uploaded photos, IDs, outfit references and wear dates are preserved.
+Uploaded garment images and preferences stay in this browser. The current mock makes no external requests. Earlier retailer/illustrated examples remain readable for backup compatibility, but are unconfirmed and excluded from previews. Failed writes preserve the previous stored state. Demo and personal data remain separate.
 
-## Files and checks
+## Files and verification
 
-- `index.html`, `style.css`, `atelier.css`: structure, forms, layout and visual design.
-- `script.js`, `experience.js`: wardrobe, outfits, storage, recommendations, planner and backups.
-- `core.js`: validation, ownership, dates and suggestion rules.
-- `temperature.js`: optional-temperature validation and condition-conflict checks.
-- `human-model.js`, `assets/human`: photographic human/hair assets, image-space calibration and approximate body shaping.
-- `avatar-core.js`, `atelier.js`: model rendering, US measurement setup and profile lifecycle. The drawn figures are retained only for instructional measurement diagrams.
-- `tryon-core.js`, `tryon.js`: garment selection, clipping, layering and placement editor.
-- `demo.js`, `assets/demo`: isolated demonstration wardrobe and original generated images.
-- `tests`: regression checks. Run `node --test tests/*.test.js` with Node 18+.
+`models.js`, `assets/models/` and `model-core.js` define model data, matching, validation and uniform height scaling. `atelier.js` handles personalization and the single image. `tryon.js`, `render-core.js` and `tryon-provider.js` handle collage and rendering. `core.js`, `script.js` and `experience.js` retain wardrobe, saved outfits and styling flows. `tryon-core.js` preserves selection and legacy fitting validation.
 
-All 84 regression tests passed with Node 22 after the temperature precision fix and integration of main’s direct-save feature. Earlier JavaScriptCore and simulated DOM checks are historical evidence; the merged code has not received a new manual browser run. These checks do not replace real-browser rendering, touch, keyboard and screen-reader testing. See PROCESS.md and ASSETS.md for details and asset prompts. Temperature-story scenarios and current verification limits are recorded in `docs/temperature-scenarios.md`.
-
-Temperature is optional. Unrealistic values show an inline error. When a valid temperature conflicts with the selected conditions, choose Switch conditions or Continue anyway; conditions are never silently replaced. Rain remains a separate footwear check; at cold temperatures, choose Chilly to require a layer and check rain protection yourself. Unit changes preserve the original entered reading for validation and condition classification.
+All 78 current regression tests pass under Node 22, covering model selection, library size, cache order/invalidation/deduplication, quota persistence, retry/failure, stale results, preference reload, legacy wardrobe data and existing saved-outfit flows. Tests for the deleted layered avatar were replaced with model-library checks. Browser checks verified immediate matching, preference persistence after reload, collage rendering, mock generation, cache reuse without a second allowance charge, and exactly one model image in the DOM.
 
 ## Publishing
 
-Publish the full static folder, including every script, `assets/demo` and `assets/human`. A feature-branch push does not update a site configured to deploy from `main`. If using GitHub Pages branch deployment, choose `main` and `/ (root)` in repository Settings → Pages. A successful Git push must still be followed by checking the deployment in the hosting service.
+Publish the full static folder, including all scripts, `assets/demo/` and `assets/models/`. For GitHub Pages branch deployment choose `main` and `/ (root)`. Local changes are not deployed until committed, pushed and deployed by the host.
